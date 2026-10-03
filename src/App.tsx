@@ -4,18 +4,21 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { liverpoolTheme } from '@/theme/theme';
 import { AuthProvider } from '@/context/AuthContext';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { AppRoutes } from '@/routes/AppRoutes';
 
 export const App: React.FC = () => {
   return (
-    <ThemeProvider theme={liverpoolTheme}>
-      <CssBaseline />
-      <AuthProvider>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </AuthProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider theme={liverpoolTheme}>
+        <CssBaseline />
+        <AuthProvider>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 };
 
