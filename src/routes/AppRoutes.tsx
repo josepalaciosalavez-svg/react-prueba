@@ -10,6 +10,9 @@ const LoginPage = lazy(() =>
 const OrdersListPage = lazy(() =>
   import('@/pages/OrdersListPage').then((m) => ({ default: m.OrdersListPage }))
 );
+const NotFoundPage = lazy(() =>
+  import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage }))
+);
 
 const RouteSuspenseFallback: React.FC = () => (
   <Box
@@ -36,6 +39,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="/pedidos" element={<OrdersListPage />} />
         </Route>
 
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Suspense>
   );
