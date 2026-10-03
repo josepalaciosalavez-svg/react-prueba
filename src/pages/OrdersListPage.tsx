@@ -1,16 +1,13 @@
 import React, { useCallback } from 'react';
 import {
   Box,
-  Button,
-  CircularProgress,
   Container,
   Skeleton,
   Stack,
   Typography,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { Navbar } from '@/components/common/Navbar';
-import { EmptyState } from '@/components/common/EmptyState';
+import { Navbar, EmptyState, GlobalButton } from '@/components/common';
 import { OrderTable } from '@/components/orders/OrderTable';
 import { OrderCard } from '@/components/orders/OrderCard';
 import { useOrders } from '@/hooks/useOrders';
@@ -47,23 +44,21 @@ export const OrdersListPage: React.FC = () => {
             <Typography variant="h4" sx={{ fontWeight: 800, color: '#0F172A' }}>
               Gestión de Pedidos
             </Typography>
+            <Typography variant="body2" sx={{ color: '#64748B', mt: 0.5 }}>
+              Búsqueda
+            </Typography>
           </Box>
 
           <Stack direction="row" spacing={1.5}>
-            <Button
+            <GlobalButton
               variant="outlined"
               size="small"
-              startIcon={isLoading ? <CircularProgress size={16} /> : <RefreshIcon />}
+              startIcon={<RefreshIcon />}
               onClick={refresh}
-              disabled={isLoading}
-              sx={{
-                borderColor: '#CBD5E1',
-                color: '#334155',
-                '&:hover': { borderColor: '#94A3B8', backgroundColor: '#F1F5F9' },
-              }}
+              loading={isLoading}
             >
               Actualizar
-            </Button>
+            </GlobalButton>
           </Stack>
         </Box>
 

@@ -1,7 +1,8 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { Box, Button, Container, Typography, Paper } from '@mui/material';
+import { Box, Container, Typography, Paper } from '@mui/material';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import { GlobalButton } from './GlobalButton';
 
 interface Props {
   children: ReactNode;
@@ -57,14 +58,13 @@ export class ErrorBoundary extends Component<Props, State> {
               {this.state.error?.message ||
                 'Se produjo un error no controlado en los componentes.'}
             </Typography>
-            <Button
+            <GlobalButton
               variant="contained"
-              color="primary"
               startIcon={<RefreshIcon />}
               onClick={this.handleReload}
             >
               Recargar página
-            </Button>
+            </GlobalButton>
           </Paper>
         </Container>
       );

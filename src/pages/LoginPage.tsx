@@ -2,10 +2,8 @@ import React, { useState } from 'react';
 import {
   Alert,
   Box,
-  Button,
   Card,
   CardContent,
-  CircularProgress,
   Container,
   IconButton,
   InputAdornment,
@@ -15,9 +13,9 @@ import {
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { GlobalButton } from '@/components/common';
 
 export const LoginPage: React.FC = () => {
   const { login, error, clearError } = useAuth();
@@ -190,26 +188,18 @@ export const LoginPage: React.FC = () => {
                 />
               </Box>
 
-              <Button
+              <GlobalButton
                 type="submit"
                 fullWidth
                 variant="contained"
-                color="primary"
                 size="large"
-                disabled={isSubmitting}
-                startIcon={isSubmitting ? <CircularProgress size={18} color="inherit" /> : <LockOutlinedIcon />}
-                sx={{
-                  py: 1.2,
-                  fontSize: '0.9375rem',
-                  fontWeight: 700,
-                  backgroundColor: '#E10098',
-                  '&:hover': {
-                    backgroundColor: '#B00075',
-                  },
-                }}
+                loading={isSubmitting}
+                loadingText="Iniciando sesión..."
+                startIcon={<LockOutlinedIcon />}
+                sx={{ py: 1.2, fontSize: '0.9375rem', fontWeight: 700 }}
               >
-                {isSubmitting ? 'Iniciando sesión...' : 'Ingresar al Portal'}
-              </Button>
+                Ingresar al Portal
+              </GlobalButton>
             </Box>
 
             {/* Quick Demo Helper */}

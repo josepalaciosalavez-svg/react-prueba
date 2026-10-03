@@ -1,9 +1,10 @@
 import React from 'react';
-import { AppBar, Avatar, Box, Button, Container, Toolbar, Typography, Chip } from '@mui/material';
+import { AppBar, Avatar, Box, Container, Toolbar, Typography, Chip } from '@mui/material';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { GlobalButton } from './GlobalButton';
 
 export const Navbar: React.FC = React.memo(() => {
   const { user, logout } = useAuth();
@@ -83,7 +84,8 @@ export const Navbar: React.FC = React.memo(() => {
 
           {/* Quick Section Nav */}
           <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
-            <Button
+            <GlobalButton
+              variant="text"
               startIcon={<ShoppingBagOutlinedIcon sx={{ fontSize: 18 }} />}
               onClick={() => navigate('/pedidos')}
               sx={{
@@ -94,7 +96,7 @@ export const Navbar: React.FC = React.memo(() => {
               }}
             >
               Lista de Pedidos
-            </Button>
+            </GlobalButton>
           </Box>
 
           {/* User profile & Logout */}
@@ -127,24 +129,14 @@ export const Navbar: React.FC = React.memo(() => {
               </Box>
             )}
 
-            <Button
+            <GlobalButton
               variant="outlined"
-              color="inherit"
               size="small"
               onClick={handleLogout}
               startIcon={<LogoutOutlinedIcon sx={{ fontSize: 16 }} />}
-              sx={{
-                borderColor: '#E2E8F0',
-                color: '#475569',
-                fontSize: '0.8125rem',
-                '&:hover': {
-                  borderColor: '#CBD5E1',
-                  backgroundColor: '#F8FAFC',
-                },
-              }}
             >
               Salir
-            </Button>
+            </GlobalButton>
           </Box>
         </Toolbar>
       </Container>

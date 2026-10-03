@@ -1,7 +1,8 @@
 import React from 'react';
-import { Box, Button, Container, Typography, Paper } from '@mui/material';
+import { Box, Container, Typography, Paper } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import { useNavigate } from 'react-router-dom';
+import { GlobalButton } from '@/components/common';
 
 export const NotFoundPage: React.FC = () => {
   const navigate = useNavigate();
@@ -45,14 +46,13 @@ export const NotFoundPage: React.FC = () => {
           <Typography variant="body2" sx={{ color: '#64748B', mb: 3 }}>
             La ruta a la que intentas acceder no existe o fue trasladada.
           </Typography>
-          <Button
+          <GlobalButton
             variant="contained"
-            color="primary"
             startIcon={<HomeIcon />}
             onClick={() => navigate('/pedidos')}
           >
             Ir a la lista de pedidos
-          </Button>
+          </GlobalButton>
         </Paper>
       </Container>
     </Box>
