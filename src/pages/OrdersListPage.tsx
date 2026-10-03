@@ -14,16 +14,19 @@ import {
   OrderListSkeleton,
 } from '@/components/orders';
 import { useOrders } from '@/hooks/useOrders';
+import { useOrderStore } from '@/stores';
 import type { Order } from '@/types/order';
 
 export const OrdersListPage: React.FC = () => {
   const { orders, metrics, isLoading, refresh } = useOrders();
+  const setStoreOrder = useOrderStore((state) => state.setSelectedOrder);
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   const handleSelectOrder = useCallback((order: Order) => {
-    console.log('order: ', order);
+    setStoreOrder(order);
+    console.log(order)
   }, []);
 
   const handleSearchSelect = useCallback((order: Order | null) => {
