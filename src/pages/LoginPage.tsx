@@ -24,8 +24,8 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [email, setEmail] = useState<string>('admin@liverpool.com.mx');
-  const [password, setPassword] = useState<string>('liverpool2026');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [validationErrors, setValidationErrors] = useState<{ email?: string; password?: string }>({});
@@ -67,13 +67,6 @@ export const LoginPage: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleFillDemo = (): void => {
-    setEmail('admin@liverpool.com.mx');
-    setPassword('liverpool2026');
-    setValidationErrors({});
-    clearError();
   };
 
   return (
@@ -230,20 +223,7 @@ export const LoginPage: React.FC = () => {
                 justifyContent: 'space-between',
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#64748B' }}>
-                <InfoOutlinedIcon sx={{ fontSize: 16 }} />
-                <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>
-                  Entorno Demo
-                </Typography>
-              </Box>
-              <Button
-                variant="text"
-                size="small"
-                onClick={handleFillDemo}
-                sx={{ fontSize: '0.75rem', color: '#E10098', p: 0.5 }}
-              >
-                Cargar credenciales
-              </Button>
+
             </Box>
           </CardContent>
         </Card>
