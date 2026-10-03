@@ -1,0 +1,108 @@
+import React, { useCallback } from 'react';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  Skeleton,
+  Stack,
+  Typography,
+} from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import { Navbar } from '@/components/common/Navbar';
+import { EmptyState } from '@/components/common/EmptyState';
+import { OrderTable } from '@/components/orders/OrderTable';
+import { OrderCard } from '@/components/orders/OrderCard';
+import { useOrders } from '@/hooks/useOrders';
+import type { Order } from '@/types/order';
+
+export const OrdersListPage: React.FC = () => {
+  const {
+    orders,
+    metrics,
+    isLoading,
+    refresh,
+  } = useOrders();
+
+  const handleSelectOrder = useCallback((order: Order) => {
+    console.log('order: ', order);
+  }, []);
+
+  return (
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#F8FAFC', pb: 8 }}>
+      <Navbar />
+
+      <Container maxWidth="xl" sx={{ pt: 4 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            justifyContent: 'space-between',
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            gap: 2,
+            mb: 3,
+          }}
+        >
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 800, color: '#0F172A' }}>
+              Gestión de Pedidos
+            </Typography>
+          </Box>
+
+          <Stack direction="row" spacing={1.5}>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={isLoading ? <CircularProgress size={16} /> : <RefreshIcon />}
+              onClick={refresh}
+              disabled={isLoading}
+              sx={{
+                borderColor: '#CBD5E1',
+                color: '#334155',
+                '&:hover': { borderColor: '#94A3B8', backgroundColor: '#F1F5F9' },
+              }}
+            >
+              Actualizar
+            </Button>
+          </Stack>
+        </Box>
+
+        {isLoading ? (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Skeleton variant="rounded" height={60} />
+            <Skeleton variant="rounded" height={60} />
+            <Skeleton variant="rounded" height={60} />
+            <Skeleton variant="rounded" height={60} />
+          </Box>
+        ) : !orders.length ? (
+          <EmptyState
+            title="No se tienen resultados"
+            description={
+              `No encontramos ningún pedido registrado.`
+            }
+          />
+        ) : (
+          <Box>
+            {/* Vista de Tabla para Escritorio */}
+            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+              <OrderTable orders={orders} onSelectOrder={handleSelectOrder} />
+            </Box>
+
+            {/* Vista de Tarjetas para Móviles */}
+            <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+              {orders.map((order) => (
+                <OrderCard key={order.id} order={order} onSelectOrder={handleSelectOrder} />
+              ))}
+            </Box>
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2, px: 1 }}>
+              <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 500 }}>
+                Mostrando {orders.length} de {metrics.totalOrders} pedidos totales
+              </Typography>
+            </Box>
+          </Box>
+        )}
+      </Container>
+    </Box>
+  );
+};
