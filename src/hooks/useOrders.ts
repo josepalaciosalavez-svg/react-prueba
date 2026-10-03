@@ -21,12 +21,9 @@ export function useOrders(): UseOrdersReturn {
     setIsLoading(true);
     setError(null);
     try {
-      const [filtered, total] = await Promise.all([
-        ordersApi.getOrders(),
-        ordersApi.getOrders(),
-      ]);
-      setOrders(filtered);
-      setAllOrders(total);
+      const data = await ordersApi.getOrders();
+      setOrders(data);
+      setAllOrders(data);
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : 'Error al cargar el listado de pedidos';
@@ -49,8 +46,6 @@ export function useOrders(): UseOrdersReturn {
       isCancelled = true;
     };
   }, [loadData]);
-
-
 
   const refresh = useCallback(async () => {
     await loadData();
