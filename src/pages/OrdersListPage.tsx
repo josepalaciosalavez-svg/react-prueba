@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, Chip, Container, Grid } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import {
@@ -18,6 +19,7 @@ import { useOrderStore } from '@/stores';
 import type { Order } from '@/types/order';
 
 export const OrdersListPage: React.FC = () => {
+  const navigate = useNavigate();
   const { orders, metrics, isLoading, refresh } = useOrders();
   const setStoreOrder = useOrderStore((state) => state.setSelectedOrder);
 
@@ -26,8 +28,8 @@ export const OrdersListPage: React.FC = () => {
 
   const handleSelectOrder = useCallback((order: Order) => {
     setStoreOrder(order);
-    console.log(order)
-  }, []);
+    navigate(`/pedidos/${order.id}`);
+  }, [navigate, setStoreOrder]);
 
   const handleSearchSelect = useCallback((order: Order | null) => {
     setSelectedOrder(order);

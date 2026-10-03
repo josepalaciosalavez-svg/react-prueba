@@ -1,17 +1,22 @@
 import React from 'react';
 import { Box } from '@mui/material';
 import SearchOffIcon from '@mui/icons-material/SearchOff';
+import { GlobalButton } from './GlobalButton';
 import { GlobalTypography } from './GlobalTypography';
 
 interface EmptyStateProps {
   title?: string;
   description?: string;
+  actionLabel?: string;
+  onAction?: () => void;
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = React.memo(
   ({
     title = 'No se tienen resultados que coincidan con los criterios de búsqueda',
     description = 'Intenta modificando los términos de búsqueda o limpiando los filtros seleccionados.',
+    actionLabel,
+    onAction,
   }) => {
     return (
       <Box
@@ -49,9 +54,15 @@ export const EmptyState: React.FC<EmptyStateProps> = React.memo(
           {title}
         </GlobalTypography>
 
-        <GlobalTypography variant="body2" sx={{ color: '#64748B', mb: 3, maxWidth: 420 }}>
+        <GlobalTypography variant="body2" sx={{ color: '#64748B', mb: actionLabel ? 2.5 : 0, maxWidth: 420 }}>
           {description}
         </GlobalTypography>
+
+        {actionLabel && onAction && (
+          <GlobalButton variant="outlined" size="small" onClick={onAction}>
+            {actionLabel}
+          </GlobalButton>
+        )}
       </Box>
     );
   }
