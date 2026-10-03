@@ -25,12 +25,18 @@ export const OrderCard: React.FC<OrderCardProps> = React.memo(({ order, onSelect
   const cantidad = Number(order.cantidad ?? 1);
   const total = Number(order.total ?? (precio * cantidad));
 
+  const handleClick = React.useCallback(() => {
+    onSelectOrder(order);
+  }, [order, onSelectOrder]);
+
   return (
     <Card
-      onClick={() => onSelectOrder(order)}
+      onClick={handleClick}
       sx={{
         cursor: 'pointer',
-        mb: 2,
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
         borderRadius: 2.5,
         border: '1px solid #E2E8F0',
         transition: 'transform 0.15s ease, box-shadow 0.15s ease',
@@ -41,7 +47,7 @@ export const OrderCard: React.FC<OrderCardProps> = React.memo(({ order, onSelect
         },
       }}
     >
-      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 }, flex: 1, display: 'flex', flexDirection: 'column' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
           <Box>
             <GlobalTypography variant="subtitle2" sx={{ fontWeight: 700, color: '#0F172A' }}>
@@ -88,7 +94,7 @@ export const OrderCard: React.FC<OrderCardProps> = React.memo(({ order, onSelect
           />
         </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1, borderTop: '1px dashed #E2E8F0' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1.5, borderTop: '1px dashed #E2E8F0', mt: 'auto' }}>
           <Box>
             <GlobalTypography variant="caption" sx={{ color: '#64748B', display: 'block' }}>
               {cantidad} pza{cantidad > 1 ? 's' : ''} • ${precio.toLocaleString('es-MX', { minimumFractionDigits: 2 })} c/u
