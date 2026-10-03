@@ -2,8 +2,9 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'ADMIN' | 'OPERATOR' | 'SUPERVISOR';
+  role: 'ADMIN' | 'OPERATOR' | 'SUPERVISOR' | string;
   avatar?: string;
+  roles?: string[];
 }
 
 export interface LoginCredentials {
@@ -14,6 +15,26 @@ export interface LoginCredentials {
 export interface AuthResponse {
   user: User;
   token: string;
+  refreshToken?: string;
+}
+
+export interface ApiAuthResponse {
+  success: boolean;
+  message?: string;
+  data: {
+    accessToken: string;
+    refreshToken?: string;
+    tokenType: string;
+    expiresIn?: number;
+    usuario: {
+      id: string;
+      nombre: string;
+      email: string;
+      roles: string[];
+      status?: string;
+      createdAt?: string;
+    };
+  };
 }
 
 export interface AuthContextType {

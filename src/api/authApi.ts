@@ -1,57 +1,68 @@
-import type { AuthResponse, LoginCredentials, User } from '@/types/auth';
-
-const STORAGE_KEY = 'liverpool_auth_session';
-
-const MOCK_USER: User = {
-  id: 'usr-001',
-  name: 'José Palacios',
-  email: 'admin@liverpool.com.mx',
-  role: 'ADMIN',
-  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
-};
+import axios from 'axios';
+import axiosInstance from '@/utils/axiosInstance';
+import { tokenStorage } from '@/utils/tokenStorage';
+import type { ApiAuthResponse, AuthResponse, LoginCredentials, User } from '@/types/auth';
 
 export const authApi = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    // Simula latencia de red controlada
-    await new Promise((resolve) => setTimeout(resolve, 350));
+    try {
+      const response = await axiosInstance.post<ApiAuthResponse>('/auth/login', {
+        email: credentials.email.trim(),
+        password: credentials.password,
+      });
 
-    const normalizedEmail = credentials.email.trim().toLowerCase();
+      const { data } = response.data;
+      const primaryRole = data.usuario.roles.includes('ROLE_ADMIN')
+        ? 'ADMIN'
+        : data.usuario.roles.includes('ROLE_SUPERVISOR')
+        ? 'SUPERVISOR'
+        : data.usuario.roles.includes('ROLE_OPERATOR') || data.usuario.roles.includes('ROLE_OPERADOR')
+        ? 'OPERATOR'
+        : data.usuario.roles[0]?.replace('ROLE_', '') || 'ADMIN';
 
-    // Valida credenciales permitidas para el entorno demo o cualquier email válido con contraseña >= 6 caracteres
-    if (
-      (normalizedEmail === 'admin@liverpool.com.mx' && credentials.password === 'liverpool2026') ||
-      (normalizedEmail.includes('@') && credentials.password.length >= 6)
-    ) {
       const user: User = {
-        ...MOCK_USER,
-        email: normalizedEmail,
-        name: normalizedEmail.split('@')[0].replace('.', ' ').toUpperCase(),
+        id: data.usuario.id,
+        name: data.usuario.nombre,
+        email: data.usuario.email,
+        role: primaryRole,
+        roles: data.usuario.roles,
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.usuario.nombre)}&background=E10098&color=fff`,
       };
 
-      const response: AuthResponse = {
+      const authSession: AuthResponse = {
         user,
-        token: `jwt_${btoa(`${user.id}:${Date.now()}`)}`,
+        token: data.accessToken,
+        refreshToken: data.refreshToken,
       };
 
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(response));
-      return response;
-    }
+      // Almacenamiento seguro del accessToken y sesión
+      tokenStorage.saveSession(authSession);
+      return authSession;
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        const errorData = error.response?.data;
+        const message =
+          errorData?.message ||
+          errorData?.mensaje ||
+          (error.response?.status === 401 ? 'Email o contraseña incorrectos' : undefined);
 
-    throw new Error('Credenciales inválidas. Verifica tu correo y contraseña.');
+        if (message) {
+          throw new Error(message);
+        }
+
+        if (error.code === 'ERR_NETWORK') {
+          throw new Error('No se pudo conectar con el servidor backend. Verifica que esté en ejecución en ' + (import.meta.env.VITE_API_URL || 'http://localhost:8080/api'));
+        }
+      }
+      throw error;
+    }
   },
 
   getCurrentSession(): AuthResponse | null {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      return JSON.parse(raw) as AuthResponse;
-    } catch {
-      localStorage.removeItem(STORAGE_KEY);
-      return null;
-    }
+    return tokenStorage.getSession();
   },
 
   logout(): void {
-    localStorage.removeItem(STORAGE_KEY);
+    tokenStorage.clearSession();
   },
 };
