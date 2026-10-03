@@ -1,10 +1,14 @@
 import React, { Suspense, lazy } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
+import { ProtectedRoute } from '@/routes/ProtectedRoute';
 import { PublicRoute } from '@/routes/PublicRoute';
 
 const LoginPage = lazy(() =>
   import('@/pages/LoginPage').then((m) => ({ default: m.LoginPage }))
+);
+const OrdersListPage = lazy(() =>
+  import('@/pages/OrdersListPage').then((m) => ({ default: m.OrdersListPage }))
 );
 
 const RouteSuspenseFallback: React.FC = () => (
@@ -27,6 +31,11 @@ export const AppRoutes: React.FC = () => {
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<LoginPage />} />
         </Route>
+        <Route path="/" element={<Navigate to="/pedidos" replace />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/pedidos" element={<OrdersListPage />} />
+        </Route>
+
       </Routes>
     </Suspense>
   );
