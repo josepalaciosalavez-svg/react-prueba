@@ -1,97 +1,205 @@
-import React, { useCallback } from 'react';
-import {
-  Box,
-  Container,
-  Skeleton,
-  Stack,
-} from '@mui/material';
+import React, { useCallback, useMemo, useState } from 'react';
+import { Box, Chip, Container, Grid } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { Navbar, EmptyState, GlobalButton, GlobalTypography } from '@/components/common';
-import { OrderTable } from '@/components/orders/OrderTable';
-import { OrderCard } from '@/components/orders/OrderCard';
+import {
+  Navbar,
+  EmptyState,
+  GlobalButton,
+  GlobalTypography,
+} from '@/components/common';
+import {
+  OrderCard,
+  OrderTable,
+  OrderSearch,
+  OrderListSkeleton,
+} from '@/components/orders';
 import { useOrders } from '@/hooks/useOrders';
 import type { Order } from '@/types/order';
 
 export const OrdersListPage: React.FC = () => {
-  const {
-    orders,
-    metrics,
-    isLoading,
-    refresh,
-  } = useOrders();
+  const { orders, metrics, isLoading, refresh } = useOrders();
+
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const handleSelectOrder = useCallback((order: Order) => {
     console.log('order: ', order);
   }, []);
 
+  const handleSearchSelect = useCallback((order: Order | null) => {
+    setSelectedOrder(order);
+  }, []);
+
+  const handleSearchChange = useCallback((query: string) => {
+    setSearchQuery(query);
+    if (!query) {
+      setSelectedOrder(null);
+    }
+  }, []);
+
+  const handleClearFilter = useCallback(() => {
+    setSelectedOrder(null);
+    setSearchQuery('');
+  }, []);
+
+  const displayedOrders = useMemo(() => {
+    if (selectedOrder) {
+      return orders.filter((o) => o.id === selectedOrder.id);
+    }
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return orders;
+    return orders.filter(
+      (o) =>
+        o.codigoProducto.toLowerCase().includes(q) ||
+        (o.nombreCliente && o.nombreCliente.toLowerCase().includes(q)) ||
+        (o.entregaId && o.entregaId.toLowerCase().includes(q)) ||
+        (o.direccionEnvio && o.direccionEnvio.toLowerCase().includes(q))
+    );
+  }, [orders, selectedOrder, searchQuery]);
+
+  const hasActiveFilter = Boolean(searchQuery) || Boolean(selectedOrder);
+
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: '#F8FAFC', pb: 8 }}>
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#F8FAFC', pb: { xs: 6, sm: 8 } }}>
       <Navbar />
 
-      <Container maxWidth="xl" sx={{ pt: 4 }}>
+      <Container
+        maxWidth="xl"
+        sx={{
+          pt: { xs: 2.5, sm: 3.5, md: 4 },
+          px: { xs: 2, sm: 3, md: 4 },
+        }}
+      >
+        {/* Encabezado con Toolbar */}
         <Box
           sx={{
             display: 'flex',
-            flexDirection: { xs: 'column', sm: 'row' },
+            flexDirection: { xs: 'column', md: 'row' },
             justifyContent: 'space-between',
-            alignItems: { xs: 'flex-start', sm: 'center' },
-            gap: 2,
-            mb: 3,
+            alignItems: { xs: 'stretch', md: 'center' },
+            gap: { xs: 2, sm: 2.5 },
+            mb: { xs: 2.5, md: 3 },
           }}
         >
           <Box>
-            <GlobalTypography variant="h4" sx={{ fontWeight: 800, color: '#0F172A' }}>
+            <GlobalTypography
+              variant="h4"
+              sx={{
+                fontWeight: 800,
+                color: '#0F172A',
+                fontSize: { xs: '1.5rem', sm: '1.875rem', md: '2.125rem' },
+                letterSpacing: '-0.02em',
+                lineHeight: 1.2,
+              }}
+            >
               Gestión de Pedidos
-            </GlobalTypography>
-            <GlobalTypography variant="body2" sx={{ color: '#64748B', mt: 0.5 }}>
-              Búsqueda
             </GlobalTypography>
           </Box>
 
-          <Stack direction="row" spacing={1.5}>
+          {/* Barra de Búsqueda Global y Acción */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              alignItems: { xs: 'stretch', sm: 'center' },
+              gap: 1.5,
+              width: { xs: '100%', md: 'auto' },
+            }}
+          >
+            <Box sx={{ width: { xs: '100%', sm: 320, md: 400, lg: 440 } }}>
+              <OrderSearch
+                value={searchQuery}
+                onSelectOrder={handleSearchSelect}
+                onQueryChange={handleSearchChange}
+              />
+            </Box>
+
             <GlobalButton
               variant="outlined"
               size="small"
               startIcon={<RefreshIcon />}
               onClick={refresh}
               loading={isLoading}
+              sx={{
+                whiteSpace: 'nowrap',
+                height: 40,
+                width: { xs: '100%', sm: 'auto' },
+                flexShrink: 0,
+              }}
             >
               Actualizar
             </GlobalButton>
-          </Stack>
+          </Box>
         </Box>
 
-        {isLoading ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <Skeleton variant="rounded" height={60} />
-            <Skeleton variant="rounded" height={60} />
-            <Skeleton variant="rounded" height={60} />
-            <Skeleton variant="rounded" height={60} />
+        {/* Filtro Activo */}
+        {hasActiveFilter && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5, flexWrap: 'wrap' }}>
+            <GlobalTypography variant="caption" sx={{ color: '#64748B', fontWeight: 600 }}>
+              Filtro activo:
+            </GlobalTypography>
+            <Chip
+              label={selectedOrder ? selectedOrder.codigoProducto : `"${searchQuery}"`}
+              size="small"
+              onDelete={handleClearFilter}
+              sx={{
+                backgroundColor: '#FCE7F3',
+                color: '#9D174D',
+                fontWeight: 600,
+                '& .MuiChip-deleteIcon': {
+                  color: '#9D174D',
+                  '&:hover': { color: '#831843' },
+                },
+              }}
+            />
           </Box>
+        )}
+
+        {/* Estados de Carga y Resultados */}
+        {isLoading ? (
+          <OrderListSkeleton />
         ) : !orders.length ? (
           <EmptyState
-            title="No se tienen resultados"
-            description={
-              `No encontramos ningún pedido registrado.`
-            }
+            title="No se tienen pedidos registrados"
+            description="No encontramos ningún pedido en la base de datos."
+          />
+        ) : !displayedOrders.length ? (
+          <EmptyState
+            title="No se tienen resultados que coincidan con los criterios de búsqueda"
+            description="Intenta modificando los términos de búsqueda o limpiando el filtro."
           />
         ) : (
           <Box>
-            {/* Vista de Tabla para Escritorio */}
+            {/* Tabla en Escritorio */}
             <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-              <OrderTable orders={orders} onSelectOrder={handleSelectOrder} />
+              <OrderTable orders={displayedOrders} onSelectOrder={handleSelectOrder} />
             </Box>
 
-            {/* Vista de Tarjetas para Móviles */}
+            {/* Cuadrícula de Tarjetas en Móviles y Tablets */}
             <Box sx={{ display: { xs: 'block', md: 'none' } }}>
-              {orders.map((order) => (
-                <OrderCard key={order.id} order={order} onSelectOrder={handleSelectOrder} />
-              ))}
+              <Grid container spacing={2}>
+                {displayedOrders.map((order) => (
+                  <Grid key={order.id} size={{ xs: 12, sm: 6 }}>
+                    <OrderCard order={order} onSelectOrder={handleSelectOrder} />
+                  </Grid>
+                ))}
+              </Grid>
             </Box>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2, px: 1 }}>
+            {/* Contador de Resultados */}
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                justifyContent: 'space-between',
+                alignItems: { xs: 'flex-start', sm: 'center' },
+                gap: 1,
+                mt: 2.5,
+                px: 1,
+              }}
+            >
               <GlobalTypography variant="caption" sx={{ color: '#64748B', fontWeight: 500 }}>
-                Mostrando {orders.length} de {metrics.totalOrders} pedidos totales
+                Mostrando {displayedOrders.length} de {metrics.totalOrders} pedidos totales
               </GlobalTypography>
             </Box>
           </Box>
@@ -100,3 +208,5 @@ export const OrdersListPage: React.FC = () => {
     </Box>
   );
 };
+
+export default OrdersListPage;

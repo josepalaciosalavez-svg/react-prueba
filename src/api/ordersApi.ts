@@ -27,7 +27,8 @@ export const ordersApi = {
           (o) =>
             o.codigoProducto.toLowerCase().includes(term) ||
             (o.nombreCliente && o.nombreCliente.toLowerCase().includes(term)) ||
-            (o.entregaId && o.entregaId.toLowerCase().includes(term))
+            (o.entregaId && o.entregaId.toLowerCase().includes(term)) ||
+            (o.direccionEnvio && o.direccionEnvio.toLowerCase().includes(term))
         )
         .slice(0, 8);
     } catch {
