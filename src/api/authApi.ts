@@ -3,6 +3,17 @@ import axiosInstance from '@/utils/axiosInstance';
 import { tokenStorage } from '@/utils/tokenStorage';
 import type { ApiAuthResponse, AuthResponse, LoginCredentials, User } from '@/types/auth';
 
+const ROLE_PRIORITY = ['ADMIN', 'SUPERVISOR', 'OPERATOR', 'USER'] as const;
+
+function resolvePrimaryRole(roles: string[]): string {
+  const normalized = new Set(roles.map((r) => r.replace(/^ROLE_/, '').toUpperCase()));
+  return (
+    ROLE_PRIORITY.find((priority) => normalized.has(priority)) ||
+    roles[0]?.replace(/^ROLE_/, '').toUpperCase() ||
+    'USER'
+  );
+}
+
 export const authApi = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
@@ -11,27 +22,29 @@ export const authApi = {
         password: credentials.password,
       });
 
-      const { data } = response.data;
-      const primaryRole = data.usuario.roles.includes('ROLE_ADMIN')
-        ? 'ADMIN'
-        : data.usuario.roles.includes('ROLE_SUPERVISOR')
-        ? 'SUPERVISOR'
-        : data.usuario.roles.includes('ROLE_OPERATOR') || data.usuario.roles.includes('ROLE_OPERADOR')
-        ? 'OPERATOR'
-        : data.usuario.roles[0]?.replace('ROLE_', '') || 'ADMIN';
+      const raw = response.data as Record<string, any>;
+      const data = raw?.data?.usuario ? raw.data : (raw?.usuario ? raw : raw?.data ?? raw);
+      const usuario = data?.usuario;
+
+      if (!usuario) {
+        throw new Error('La respuesta del servidor no contiene la información del usuario.');
+      }
+
+      const roles: string[] = Array.isArray(usuario.roles) ? usuario.roles : [];
+      const primaryRole = resolvePrimaryRole(roles);
 
       const user: User = {
-        id: data.usuario.id,
-        name: data.usuario.nombre,
-        email: data.usuario.email,
+        id: usuario.id,
+        name: usuario.nombre,
+        email: usuario.email,
         role: primaryRole,
-        roles: data.usuario.roles,
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.usuario.nombre)}&background=E10098&color=fff`,
+        roles,
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(usuario.nombre)}&background=E10098&color=fff`,
       };
 
       const authSession: AuthResponse = {
         user,
-        token: data.accessToken,
+        token: data.accessToken || data.token,
         refreshToken: data.refreshToken,
       };
 
