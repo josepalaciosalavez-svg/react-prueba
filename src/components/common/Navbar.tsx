@@ -1,10 +1,11 @@
 import React from 'react';
-import { AppBar, Avatar, Box, Container, Toolbar, Typography, Chip } from '@mui/material';
+import { AppBar, Avatar, Box, Container, Toolbar, Chip } from '@mui/material';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { GlobalButton } from './GlobalButton';
+import { GlobalTypography } from './GlobalTypography';
 
 export const Navbar: React.FC = React.memo(() => {
   const { user, logout } = useAuth();
@@ -56,7 +57,7 @@ export const Navbar: React.FC = React.memo(() => {
               L
             </Box>
             <Box>
-              <Typography
+              <GlobalTypography
                 variant="subtitle1"
                 sx={{
                   fontWeight: 800,
@@ -66,8 +67,8 @@ export const Navbar: React.FC = React.memo(() => {
                 }}
               >
                 Liverpool
-              </Typography>
-              <Typography
+              </GlobalTypography>
+              <GlobalTypography
                 variant="caption"
                 sx={{
                   color: '#64748B',
@@ -78,7 +79,7 @@ export const Navbar: React.FC = React.memo(() => {
                 }}
               >
                 Portal de Pedidos
-              </Typography>
+              </GlobalTypography>
             </Box>
           </Box>
 
@@ -111,9 +112,9 @@ export const Navbar: React.FC = React.memo(() => {
                   {user.name.charAt(0)}
                 </Avatar>
                 <Box sx={{ display: { xs: 'none', sm: 'block' }, textAlign: 'right' }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.2 }}>
+                  <GlobalTypography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.2 }}>
                     {user.name}
-                  </Typography>
+                  </GlobalTypography>
                   <Chip
                     label={user.role}
                     size="small"

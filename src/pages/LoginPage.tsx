@@ -8,14 +8,13 @@ import {
   IconButton,
   InputAdornment,
   TextField,
-  Typography,
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { GlobalButton } from '@/components/common';
+import { GlobalButton, GlobalTypography } from '@/components/common';
 
 export const LoginPage: React.FC = () => {
   const { login, error, clearError } = useAuth();
@@ -114,12 +113,12 @@ export const LoginPage: React.FC = () => {
               >
                 L
               </Box>
-              <Typography variant="h5" sx={{ fontWeight: 800, color: '#0F172A' }}>
+              <GlobalTypography variant="h5" sx={{ fontWeight: 800, color: '#0F172A' }}>
                 Liverpool
-              </Typography>
-              <Typography variant="body2" sx={{ color: '#64748B', mt: 0.5 }}>
+              </GlobalTypography>
+              <GlobalTypography variant="body2" sx={{ color: '#64748B', mt: 0.5 }}>
                 Sistema de Control y Consulta de Pedidos
-              </Typography>
+              </GlobalTypography>
             </Box>
 
             {error && (
@@ -131,9 +130,9 @@ export const LoginPage: React.FC = () => {
             {/* Formulario */}
             <Box component="form" onSubmit={handleSubmit} noValidate>
               <Box sx={{ mb: 2 }}>
-                <Typography variant="caption" sx={{ fontWeight: 600, color: '#334155', mb: 0.5, display: 'block' }}>
+                <GlobalTypography variant="caption" sx={{ fontWeight: 600, color: '#334155', mb: 0.5, display: 'block' }}>
                   Correo institucional
-                </Typography>
+                </GlobalTypography>
                 <TextField
                   fullWidth
                   size="small"
@@ -152,9 +151,9 @@ export const LoginPage: React.FC = () => {
               </Box>
 
               <Box sx={{ mb: 2.5 }}>
-                <Typography variant="caption" sx={{ fontWeight: 600, color: '#334155', mb: 0.5, display: 'block' }}>
+                <GlobalTypography variant="caption" sx={{ fontWeight: 600, color: '#334155', mb: 0.5, display: 'block' }}>
                   Contraseña
-                </Typography>
+                </GlobalTypography>
                 <TextField
                   fullWidth
                   size="small"

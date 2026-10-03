@@ -1,6 +1,7 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import SearchOffIcon from '@mui/icons-material/SearchOff';
+import { GlobalTypography } from './GlobalTypography';
 
 interface EmptyStateProps {
   title?: string;
@@ -44,13 +45,13 @@ export const EmptyState: React.FC<EmptyStateProps> = React.memo(
           <SearchOffIcon sx={{ fontSize: 36 }} />
         </Box>
 
-        <Typography variant="h6" sx={{ color: '#0F172A', fontWeight: 600, mb: 1, maxWidth: 500 }}>
+        <GlobalTypography variant="h6" sx={{ color: '#0F172A', fontWeight: 600, mb: 1, maxWidth: 500 }}>
           {title}
-        </Typography>
+        </GlobalTypography>
 
-        <Typography variant="body2" sx={{ color: '#64748B', mb: 3, maxWidth: 420 }}>
+        <GlobalTypography variant="body2" sx={{ color: '#64748B', mb: 3, maxWidth: 420 }}>
           {description}
-        </Typography>
+        </GlobalTypography>
       </Box>
     );
   }

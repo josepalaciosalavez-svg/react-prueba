@@ -10,10 +10,9 @@ import {
   TableHead,
   TableRow,
   Tooltip,
-  Typography,
 } from '@mui/material';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import { StatusChip } from '@/components/common/StatusChip';
+import { StatusChip, GlobalTypography } from '@/components/common';
 import type { Order } from '@/types/order';
 
 interface OrderTableProps {
@@ -94,12 +93,12 @@ export const OrderTable: React.FC<OrderTableProps> = React.memo(({ orders, onSel
               >
                 {/* Código de Producto */}
                 <TableCell component="th" scope="row" sx={{ whiteSpace: 'nowrap', py: 2 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>
+                  <GlobalTypography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>
                     {order.codigoProducto}
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: '#94A3B8', display: 'block', fontSize: '0.725rem' }}>
+                  </GlobalTypography>
+                  <GlobalTypography variant="caption" sx={{ color: '#94A3B8', display: 'block', fontSize: '0.725rem' }}>
                     {formattedDate}
-                  </Typography>
+                  </GlobalTypography>
                 </TableCell>
 
                 {/* Cantidad */}
@@ -113,16 +112,16 @@ export const OrderTable: React.FC<OrderTableProps> = React.memo(({ orders, onSel
 
                 {/* Precio */}
                 <TableCell align="right" sx={{ whiteSpace: 'nowrap', py: 2 }}>
-                  <Typography variant="body2" sx={{ color: '#334155', fontWeight: 500 }}>
+                  <GlobalTypography variant="body2" sx={{ color: '#334155', fontWeight: 500 }}>
                     ${precio.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </Typography>
+                  </GlobalTypography>
                 </TableCell>
 
                 {/* Total */}
                 <TableCell align="right" sx={{ whiteSpace: 'nowrap', py: 2 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>
+                  <GlobalTypography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>
                     ${total.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </Typography>
+                  </GlobalTypography>
                 </TableCell>
 
                 {/* Estatus */}
@@ -132,7 +131,7 @@ export const OrderTable: React.FC<OrderTableProps> = React.memo(({ orders, onSel
 
                 {/* ID Entrega */}
                 <TableCell sx={{ whiteSpace: 'nowrap', py: 2 }}>
-                  <Typography
+                  <GlobalTypography
                     variant="caption"
                     sx={{
                       fontFamily: 'monospace',
@@ -146,21 +145,21 @@ export const OrderTable: React.FC<OrderTableProps> = React.memo(({ orders, onSel
                     }}
                   >
                     {order.entregaId}
-                  </Typography>
+                  </GlobalTypography>
                 </TableCell>
 
                 {/* Cliente */}
                 <TableCell sx={{ py: 2, minWidth: 160 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#0F172A' }}>
+                  <GlobalTypography variant="body2" sx={{ fontWeight: 600, color: '#0F172A' }}>
                     {order.nombreCliente || 'No asignado'}
-                  </Typography>
+                  </GlobalTypography>
                 </TableCell>
 
                 {/* Dirección de Entrega */}
                 <TableCell sx={{ py: 2, minWidth: 220 }}>
-                  <Typography variant="body2" sx={{ color: '#475569', fontSize: '0.8125rem', lineHeight: 1.35 }}>
+                  <GlobalTypography variant="body2" sx={{ color: '#475569', fontSize: '0.8125rem', lineHeight: 1.35 }}>
                     {order.direccionEnvio || 'Dirección pendiente'}
-                  </Typography>
+                  </GlobalTypography>
                 </TableCell>
 
                 {/* Acción */}

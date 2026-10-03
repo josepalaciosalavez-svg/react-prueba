@@ -1,8 +1,9 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { Box, Container, Typography, Paper } from '@mui/material';
+import { Box, Container, Paper } from '@mui/material';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { GlobalButton } from './GlobalButton';
+import { GlobalTypography } from './GlobalTypography';
 
 interface Props {
   children: ReactNode;
@@ -51,13 +52,13 @@ export class ErrorBoundary extends Component<Props, State> {
             >
               <ErrorOutlineOutlinedIcon sx={{ fontSize: 36 }} />
             </Box>
-            <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+            <GlobalTypography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
               Ocurrió un problema en la vista
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
+            </GlobalTypography>
+            <GlobalTypography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
               {this.state.error?.message ||
                 'Se produjo un error no controlado en los componentes.'}
-            </Typography>
+            </GlobalTypography>
             <GlobalButton
               variant="contained"
               startIcon={<RefreshIcon />}

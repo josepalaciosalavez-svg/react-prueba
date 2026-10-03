@@ -1,8 +1,8 @@
 import React from 'react';
-import { Box, Container, Typography, Paper } from '@mui/material';
+import { Box, Container, Paper } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import { useNavigate } from 'react-router-dom';
-import { GlobalButton } from '@/components/common';
+import { GlobalButton, GlobalTypography } from '@/components/common';
 
 export const NotFoundPage: React.FC = () => {
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ export const NotFoundPage: React.FC = () => {
             border: '1px solid #E2E8F0',
           }}
         >
-          <Typography
+          <GlobalTypography
             variant="h1"
             sx={{
               fontWeight: 900,
@@ -39,13 +39,13 @@ export const NotFoundPage: React.FC = () => {
             }}
           >
             404
-          </Typography>
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: '#0F172A' }}>
+          </GlobalTypography>
+          <GlobalTypography variant="h5" sx={{ fontWeight: 700, mb: 1, color: '#0F172A' }}>
             Página no encontrada
-          </Typography>
-          <Typography variant="body2" sx={{ color: '#64748B', mb: 3 }}>
+          </GlobalTypography>
+          <GlobalTypography variant="body2" sx={{ color: '#64748B', mb: 3 }}>
             La ruta a la que intentas acceder no existe o fue trasladada.
-          </Typography>
+          </GlobalTypography>
           <GlobalButton
             variant="contained"
             startIcon={<HomeIcon />}

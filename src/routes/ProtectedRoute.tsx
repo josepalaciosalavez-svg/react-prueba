@@ -1,7 +1,8 @@
 import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
 import { useAuth } from '@/hooks/useAuth';
+import { GlobalTypography } from '@/components/common';
 
 export const ProtectedRoute: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -21,9 +22,9 @@ export const ProtectedRoute: React.FC = () => {
         }}
       >
         <CircularProgress sx={{ color: '#E10098' }} size={40} thickness={4} />
-        <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 500 }}>
+        <GlobalTypography variant="body2" sx={{ color: '#64748B', fontWeight: 500 }}>
           Verificando sesión
-        </Typography>
+        </GlobalTypography>
       </Box>
     );
   }

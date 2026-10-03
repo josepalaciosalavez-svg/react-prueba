@@ -4,10 +4,9 @@ import {
   Container,
   Skeleton,
   Stack,
-  Typography,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { Navbar, EmptyState, GlobalButton } from '@/components/common';
+import { Navbar, EmptyState, GlobalButton, GlobalTypography } from '@/components/common';
 import { OrderTable } from '@/components/orders/OrderTable';
 import { OrderCard } from '@/components/orders/OrderCard';
 import { useOrders } from '@/hooks/useOrders';
@@ -41,12 +40,12 @@ export const OrdersListPage: React.FC = () => {
           }}
         >
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 800, color: '#0F172A' }}>
+            <GlobalTypography variant="h4" sx={{ fontWeight: 800, color: '#0F172A' }}>
               Gestión de Pedidos
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#64748B', mt: 0.5 }}>
+            </GlobalTypography>
+            <GlobalTypography variant="body2" sx={{ color: '#64748B', mt: 0.5 }}>
               Búsqueda
-            </Typography>
+            </GlobalTypography>
           </Box>
 
           <Stack direction="row" spacing={1.5}>
@@ -91,9 +90,9 @@ export const OrdersListPage: React.FC = () => {
             </Box>
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2, px: 1 }}>
-              <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 500 }}>
+              <GlobalTypography variant="caption" sx={{ color: '#64748B', fontWeight: 500 }}>
                 Mostrando {orders.length} de {metrics.totalOrders} pedidos totales
-              </Typography>
+              </GlobalTypography>
             </Box>
           </Box>
         )}
