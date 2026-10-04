@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ordersApi } from '@/api/ordersApi';
-import type { Order, OrderSummaryMetrics } from '@/types/order';
+import type { Order, OrderSummaryMetrics, UpdateOrderDto } from '@/types/order';
 
 interface UseOrdersReturn {
   orders: Order[];
@@ -10,6 +10,7 @@ interface UseOrdersReturn {
   error: string | null;
   refresh: () => Promise<void>;
   removeOrder: (id: string) => Promise<boolean>;
+  updateOrder: (id: string, payload: UpdateOrderDto) => Promise<Order>;
 }
 
 export function useOrders(): UseOrdersReturn {
@@ -65,6 +66,19 @@ export function useOrders(): UseOrdersReturn {
     }
   }, []);
 
+  const updateOrder = useCallback(async (id: string, payload: UpdateOrderDto): Promise<Order> => {
+    try {
+      const updated = await ordersApi.updateOrder(id, payload);
+      setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, ...updated } : o)));
+      setAllOrders((prev) => prev.map((o) => (o.id === id ? { ...o, ...updated } : o)));
+      return updated;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Error al actualizar el pedido';
+      setError(message);
+      throw err;
+    }
+  }, []);
+
   const metrics = useMemo<OrderSummaryMetrics>(() => {
     return ordersApi.calculateMetrics(allOrders);
   }, [allOrders]);
@@ -77,5 +91,6 @@ export function useOrders(): UseOrdersReturn {
     error,
     refresh,
     removeOrder,
+    updateOrder,
   };
 }

@@ -13,6 +13,7 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
@@ -27,7 +28,7 @@ import {
   StatusChip,
   AclGuard,
 } from '@/components/common';
-import { DeleteOrderDialog } from '@/components/orders';
+import { DeleteOrderDialog, EditOrderModal } from '@/components/orders';
 import { ordersApi } from '@/api/ordersApi';
 import { useOrderStore, notificationStore } from '@/stores';
 import type { Order } from '@/types/order';
@@ -44,6 +45,7 @@ export const OrderDetailPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(() => !isMatch);
   const [error, setError] = useState<string | null>(null);
   const [openConfirmDelete, setOpenConfirmDelete] = useState<boolean>(false);
+  const [openEditModal, setOpenEditModal] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
   const missingIdError = !id ? 'Identificador de pedido no proporcionado.' : null;
@@ -131,12 +133,16 @@ export const OrderDetailPage: React.FC = () => {
       notificationStore.getState().showSuccess(`Pedido #${order.codigoProducto} eliminado exitosamente.`);
       setOpenConfirmDelete(false);
       navigate('/pedidos', { replace: true });
-    } catch (error) {
-      //console.log('error on order: ', error)
+    } catch {
     } finally {
       setIsDeleting(false);
     }
   }, [order, navigate]);
+
+  const handleEditSuccess = useCallback((updatedOrder: Order) => {
+    setOrder(updatedOrder);
+    setStoreOrder(updatedOrder);
+  }, [setStoreOrder]);
 
   const formattedDates = useMemo(() => {
     if (!order) return { created: 'N/A', updated: 'N/A' };
@@ -229,6 +235,24 @@ export const OrderDetailPage: React.FC = () => {
             )}
 
             {order && (
+              <GlobalButton
+                variant="outlined"
+                size="small"
+                startIcon={<EditOutlinedIcon />}
+                onClick={() => setOpenEditModal(true)}
+                sx={{
+                  height: 38,
+                  borderColor: '#E10098',
+                  color: '#E10098',
+                  fontWeight: 600,
+                  '&:hover': { borderColor: '#C50084', backgroundColor: '#FDF2F8' },
+                }}
+              >
+                Editar Pedido
+              </GlobalButton>
+            )}
+
+            {order && (
               <AclGuard role="ADMIN">
                 <GlobalButton
                   variant="contained"
@@ -249,7 +273,6 @@ export const OrderDetailPage: React.FC = () => {
           </Box>
         </Box>
 
-        {/* Estado de carga */}
         {isLoading ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
             <Skeleton variant="rounded" height={120} sx={{ borderRadius: 3 }} />
@@ -405,7 +428,6 @@ export const OrderDetailPage: React.FC = () => {
                       </Box>
                     </Box>
 
-                    {/* Resumen Financiero */}
                     <Box sx={{ mt: 'auto', pt: 2, borderTop: '1px dashed #E2E8F0' }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.8 }}>
                         <GlobalTypography variant="body2" sx={{ color: '#64748B' }}>
@@ -440,10 +462,8 @@ export const OrderDetailPage: React.FC = () => {
                 </Card>
               </Grid>
 
-              {/* Columna Derecha: Cliente y Entrega */}
               <Grid size={{ xs: 12, md: 4 }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  {/* Tarjeta de Cliente */}
                   <Card
                     elevation={0}
                     sx={{
@@ -485,7 +505,6 @@ export const OrderDetailPage: React.FC = () => {
                     </CardContent>
                   </Card>
 
-                  {/* Tarjeta de Entrega y Envío */}
                   <Card
                     elevation={0}
                     sx={{
@@ -558,13 +577,19 @@ export const OrderDetailPage: React.FC = () => {
           </Box>
         )}
 
-        {/* Diálogo de Confirmación de Borrado */}
         <DeleteOrderDialog
           open={openConfirmDelete}
           order={order}
           isDeleting={isDeleting}
           onConfirm={handleConfirmDelete}
           onClose={() => !isDeleting && setOpenConfirmDelete(false)}
+        />
+
+        <EditOrderModal
+          open={openEditModal}
+          order={order}
+          onClose={() => setOpenEditModal(false)}
+          onSuccess={handleEditSuccess}
         />
       </Container>
     </Box>

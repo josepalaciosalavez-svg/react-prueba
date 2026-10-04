@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Card, CardContent, Chip, Divider, IconButton, Tooltip } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
@@ -11,10 +12,11 @@ import type { Order } from '@/types/order';
 interface OrderCardProps {
   order: Order;
   onSelectOrder: (order: Order) => void;
+  onEditOrder?: (order: Order) => void;
   onDeleteOrder?: (order: Order) => void;
 }
 
-export const OrderCard: React.FC<OrderCardProps> = React.memo(({ order, onSelectOrder, onDeleteOrder }) => {
+export const OrderCard: React.FC<OrderCardProps> = React.memo(({ order, onSelectOrder, onEditOrder, onDeleteOrder }) => {
   const formattedDate = order.createdAt
     ? new Date(order.createdAt).toLocaleDateString('es-MX', {
       day: '2-digit',
@@ -49,64 +51,94 @@ export const OrderCard: React.FC<OrderCardProps> = React.memo(({ order, onSelect
         },
       }}
     >
-      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 }, flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+      <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%', '&:last-child': { pb: 2 } }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
           <Box>
-            <GlobalTypography variant="subtitle2" sx={{ fontWeight: 700, color: '#0F172A' }}>
+            <GlobalTypography variant="subtitle1" sx={{ fontWeight: 700, color: '#0F172A', lineHeight: 1.2 }}>
               {order.codigoProducto}
             </GlobalTypography>
-            <GlobalTypography variant="caption" sx={{ color: '#64748B' }}>
+            <GlobalTypography variant="caption" sx={{ color: '#94A3B8', fontSize: '0.75rem' }}>
               {formattedDate}
             </GlobalTypography>
           </Box>
-          <StatusChip status={order.statusPedido} />
+          <StatusChip status={order.statusPedido} size="small" />
         </Box>
 
-        <Divider sx={{ my: 1.5 }} />
-
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-          <PersonOutlinedIcon sx={{ fontSize: 18, color: '#64748B' }} />
-          <GlobalTypography variant="body2" sx={{ fontWeight: 600, color: '#334155' }}>
-            {order.nombreCliente || 'No asignado'}
-          </GlobalTypography>
-        </Box>
-
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1 }}>
-          <LocationOnOutlinedIcon sx={{ fontSize: 18, color: '#64748B', mt: 0.2 }} />
-          <GlobalTypography variant="caption" sx={{ color: '#64748B', lineHeight: 1.3 }}>
-            {order.direccionEnvio || 'Dirección pendiente'}
-          </GlobalTypography>
-        </Box>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-          <LocalShippingOutlinedIcon sx={{ fontSize: 18, color: '#64748B' }} />
-          <GlobalTypography variant="caption" sx={{ color: '#64748B' }}>
-            Entrega:
-          </GlobalTypography>
-          <Chip
-            label={order.entregaId}
-            size="small"
-            sx={{
-              height: 20,
-              fontSize: '0.6875rem',
-              fontFamily: 'monospace',
-              backgroundColor: '#F1F5F9',
-              color: '#475569',
-            }}
-          />
-        </Box>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1.5, borderTop: '1px dashed #E2E8F0', mt: 'auto' }}>
-          <Box>
-            <GlobalTypography variant="caption" sx={{ color: '#64748B', display: 'block' }}>
-              {cantidad} pza{cantidad > 1 ? 's' : ''} • ${precio.toLocaleString('es-MX', { minimumFractionDigits: 2 })} c/u
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.8, my: 1, flex: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+            <PersonOutlinedIcon sx={{ fontSize: 16, color: '#64748B' }} />
+            <GlobalTypography variant="body2" sx={{ color: '#334155', fontWeight: 500, fontSize: '0.8125rem' }}>
+              {order.nombreCliente || 'Cliente no asignado'}
             </GlobalTypography>
-            <GlobalTypography variant="subtitle1" sx={{ fontWeight: 800, color: '#0F172A' }}>
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.8 }}>
+            <LocationOnOutlinedIcon sx={{ fontSize: 16, color: '#64748B', mt: 0.2 }} />
+            <GlobalTypography
+              variant="body2"
+              sx={{
+                color: '#64748B',
+                fontSize: '0.775rem',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                lineHeight: 1.3,
+              }}
+            >
+              {order.direccionEnvio || 'Dirección de entrega pendiente'}
+            </GlobalTypography>
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mt: 0.2 }}>
+            <LocalShippingOutlinedIcon sx={{ fontSize: 16, color: '#64748B' }} />
+            <GlobalTypography variant="caption" sx={{ color: '#64748B', fontFamily: 'monospace', fontWeight: 600 }}>
+              ID: {order.entregaId}
+            </GlobalTypography>
+          </Box>
+        </Box>
+
+        <Divider sx={{ my: 1.5, borderColor: '#F1F5F9' }} />
+
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+              <Chip
+                label={`${cantidad} pza${cantidad > 1 ? 's' : ''}`}
+                size="small"
+                sx={{ height: 20, fontSize: '0.7rem', fontWeight: 600, backgroundColor: '#F8FAFC' }}
+              />
+              <GlobalTypography variant="caption" sx={{ color: '#64748B' }}>
+                x ${precio.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+              </GlobalTypography>
+            </Box>
+            <GlobalTypography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', mt: 0.4, fontSize: '1.05rem' }}>
               ${total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
             </GlobalTypography>
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+            {onEditOrder && (
+              <Tooltip title="Editar pedido">
+                <IconButton
+                  size="small"
+                  sx={{
+                    color: '#0284C7',
+                    backgroundColor: '#F0F9FF',
+                    '&:hover': { backgroundColor: '#E0F2FE' },
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditOrder(order);
+                  }}
+                  aria-label={`Editar pedido ${order.codigoProducto}`}
+                >
+                  <EditOutlinedIcon sx={{ fontSize: 18 }} />
+                </IconButton>
+              </Tooltip>
+            )}
+
             {onDeleteOrder && (
               <AclGuard role="ADMIN">
                 <Tooltip title="Eliminar pedido">
@@ -141,3 +173,5 @@ export const OrderCard: React.FC<OrderCardProps> = React.memo(({ order, onSelect
 });
 
 OrderCard.displayName = 'OrderCard';
+
+export default OrderCard;

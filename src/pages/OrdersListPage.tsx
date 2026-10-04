@@ -14,6 +14,7 @@ import {
   OrderSearch,
   OrderListSkeleton,
   DeleteOrderDialog,
+  EditOrderModal,
 } from '@/components/orders';
 import { useOrders } from '@/hooks/useOrders';
 import { useOrderStore, notificationStore } from '@/stores';
@@ -27,6 +28,7 @@ export const OrdersListPage: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
+  const [orderToEdit, setOrderToEdit] = useState<Order | null>(null);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
   const handleSelectOrder = useCallback((order: Order) => {
@@ -46,7 +48,6 @@ export const OrdersListPage: React.FC = () => {
       notificationStore.getState().showSuccess(`Pedido #${orderToDelete.codigoProducto} eliminado exitosamente.`);
       setOrderToDelete(null);
     } catch {
-      // El error es capturado y notificado automáticamente por deleteOrder
     } finally {
       setIsDeleting(false);
     }
@@ -57,6 +58,18 @@ export const OrdersListPage: React.FC = () => {
       setOrderToDelete(null);
     }
   }, [isDeleting]);
+
+  const handleRequestEdit = useCallback((order: Order) => {
+    setOrderToEdit(order);
+  }, []);
+
+  const handleCloseEdit = useCallback(() => {
+    setOrderToEdit(null);
+  }, []);
+
+  const handleEditSuccess = useCallback(() => {
+    refresh();
+  }, [refresh]);
 
   const handleSearchSelect = useCallback((order: Order | null) => {
     setSelectedOrder(order);
@@ -102,7 +115,6 @@ export const OrdersListPage: React.FC = () => {
           px: { xs: 2, sm: 3, md: 4 },
         }}
       >
-        {/* Encabezado con Toolbar */}
         <Box
           sx={{
             display: 'flex',
@@ -128,7 +140,6 @@ export const OrdersListPage: React.FC = () => {
             </GlobalTypography>
           </Box>
 
-          {/* Barra de Búsqueda Global y Acción */}
           <Box
             sx={{
               display: 'flex',
@@ -148,15 +159,19 @@ export const OrdersListPage: React.FC = () => {
 
             <GlobalButton
               variant="outlined"
-              size="small"
+              size="medium"
               startIcon={<RefreshIcon />}
               onClick={refresh}
               loading={isLoading}
               sx={{
-                whiteSpace: 'nowrap',
-                height: 40,
-                width: { xs: '100%', sm: 'auto' },
-                flexShrink: 0,
+                color: '#E10098',
+                borderColor: '#FCE7F3',
+                backgroundColor: '#FFFFFF',
+                fontWeight: 600,
+                '&:hover': {
+                  borderColor: '#E10098',
+                  backgroundColor: '#FDF2F8',
+                },
               }}
             >
               Actualizar
@@ -164,54 +179,40 @@ export const OrdersListPage: React.FC = () => {
           </Box>
         </Box>
 
-        {/* Filtro Activo */}
         {hasActiveFilter && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5, flexWrap: 'wrap' }}>
-            <GlobalTypography variant="caption" sx={{ color: '#64748B', fontWeight: 600 }}>
+          <Box sx={{ mb: 2.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <GlobalTypography variant="body2" sx={{ color: '#64748B' }}>
               Filtro activo:
             </GlobalTypography>
             <Chip
-              label={selectedOrder ? selectedOrder.codigoProducto : `"${searchQuery}"`}
-              size="small"
+              label={selectedOrder ? `Pedido: ${selectedOrder.codigoProducto}` : `Búsqueda: "${searchQuery}"`}
               onDelete={handleClearFilter}
-              sx={{
-                backgroundColor: '#FCE7F3',
-                color: '#9D174D',
-                fontWeight: 600,
-                '& .MuiChip-deleteIcon': {
-                  color: '#9D174D',
-                  '&:hover': { color: '#831843' },
-                },
-              }}
+              color="primary"
+              variant="outlined"
+              size="small"
+              sx={{ borderColor: '#E10098', color: '#E10098', fontWeight: 600 }}
             />
           </Box>
         )}
 
-        {/* Estados de Carga y Resultados */}
         {isLoading ? (
           <OrderListSkeleton />
-        ) : !orders.length ? (
-          <EmptyState
-            title="No se tienen pedidos registrados"
-            description="No encontramos ningún pedido en la base de datos."
-          />
-        ) : !displayedOrders.length ? (
+        ) : displayedOrders.length === 0 ? (
           <EmptyState
             title="No se tienen resultados que coincidan con los criterios de búsqueda"
             description="Intenta modificando los términos de búsqueda o limpiando el filtro."
           />
         ) : (
           <Box>
-            {/* Tabla en Escritorio */}
             <Box sx={{ display: { xs: 'none', md: 'block' } }}>
               <OrderTable
                 orders={displayedOrders}
                 onSelectOrder={handleSelectOrder}
+                onEditOrder={handleRequestEdit}
                 onDeleteOrder={handleRequestDelete}
               />
             </Box>
 
-            {/* Cuadrícula de Tarjetas en Móviles y Tablets */}
             <Box sx={{ display: { xs: 'block', md: 'none' } }}>
               <Grid container spacing={2}>
                 {displayedOrders.map((order) => (
@@ -219,6 +220,7 @@ export const OrdersListPage: React.FC = () => {
                     <OrderCard
                       order={order}
                       onSelectOrder={handleSelectOrder}
+                      onEditOrder={handleRequestEdit}
                       onDeleteOrder={handleRequestDelete}
                     />
                   </Grid>
@@ -226,7 +228,6 @@ export const OrdersListPage: React.FC = () => {
               </Grid>
             </Box>
 
-            {/* Contador de Resultados */}
             <Box
               sx={{
                 display: 'flex',
@@ -245,13 +246,19 @@ export const OrdersListPage: React.FC = () => {
           </Box>
         )}
 
-        {/* Diálogo de Confirmación de Borrado */}
         <DeleteOrderDialog
           open={Boolean(orderToDelete)}
           order={orderToDelete}
           isDeleting={isDeleting}
           onConfirm={handleConfirmDelete}
           onClose={handleCloseDelete}
+        />
+
+        <EditOrderModal
+          open={Boolean(orderToEdit)}
+          order={orderToEdit}
+          onClose={handleCloseEdit}
+          onSuccess={handleEditSuccess}
         />
       </Container>
     </Box>

@@ -25,6 +25,14 @@ export interface Order {
   totalAmount?: number;
 }
 
+export interface UpdateOrderDto {
+  codigoProducto: string;
+  cantidad: number;
+  precio: number;
+  statusPedido: OrderStatus;
+  entregaId: string;
+}
+
 export interface OrderSummaryMetrics {
   totalOrders: number;
   pendingCount: number;

@@ -13,6 +13,7 @@ import {
   Tooltip,
 } from '@mui/material';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import { StatusChip, GlobalTypography, AclGuard } from '@/components/common';
 import type { Order } from '@/types/order';
@@ -20,10 +21,11 @@ import type { Order } from '@/types/order';
 interface OrderTableRowProps {
   order: Order;
   onSelectOrder: (order: Order) => void;
+  onEditOrder?: (order: Order) => void;
   onDeleteOrder?: (order: Order) => void;
 }
 
-const OrderTableRow: React.FC<OrderTableRowProps> = React.memo(({ order, onSelectOrder, onDeleteOrder }) => {
+const OrderTableRow: React.FC<OrderTableRowProps> = React.memo(({ order, onSelectOrder, onEditOrder, onDeleteOrder }) => {
   const formattedDate = order.createdAt
     ? new Date(order.createdAt).toLocaleDateString('es-MX', {
         day: '2-digit',
@@ -50,6 +52,14 @@ const OrderTableRow: React.FC<OrderTableRowProps> = React.memo(({ order, onSelec
     [order, onSelectOrder]
   );
 
+  const handleEditClick = React.useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onEditOrder?.(order);
+    },
+    [order, onEditOrder]
+  );
+
   const handleDeleteClick = React.useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -68,7 +78,6 @@ const OrderTableRow: React.FC<OrderTableRowProps> = React.memo(({ order, onSelec
         '&:last-child td, &:last-child th': { border: 0 },
       }}
     >
-      {/* Código de Producto */}
       <TableCell component="th" scope="row" sx={{ whiteSpace: 'nowrap', py: 2 }}>
         <GlobalTypography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>
           {order.codigoProducto}
@@ -78,35 +87,36 @@ const OrderTableRow: React.FC<OrderTableRowProps> = React.memo(({ order, onSelec
         </GlobalTypography>
       </TableCell>
 
-      {/* Cantidad */}
       <TableCell align="center" sx={{ py: 2 }}>
         <Chip
           label={`${cantidad} pza${cantidad > 1 ? 's' : ''}`}
           size="small"
-          sx={{ fontWeight: 600, backgroundColor: '#F1F5F9', color: '#334155' }}
+          sx={{
+            fontWeight: 600,
+            fontSize: '0.75rem',
+            backgroundColor: '#F1F5F9',
+            color: '#334155',
+            borderRadius: 1.5,
+          }}
         />
       </TableCell>
 
-      {/* Precio */}
       <TableCell align="right" sx={{ whiteSpace: 'nowrap', py: 2 }}>
-        <GlobalTypography variant="body2" sx={{ color: '#334155', fontWeight: 500 }}>
+        <GlobalTypography variant="body2" sx={{ fontWeight: 500, color: '#334155' }}>
           ${precio.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </GlobalTypography>
       </TableCell>
 
-      {/* Total */}
       <TableCell align="right" sx={{ whiteSpace: 'nowrap', py: 2 }}>
         <GlobalTypography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>
           ${total.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </GlobalTypography>
       </TableCell>
 
-      {/* Estatus */}
-      <TableCell align="center" sx={{ whiteSpace: 'nowrap', py: 2 }}>
-        <StatusChip status={order.statusPedido} />
+      <TableCell align="center" sx={{ py: 2 }}>
+        <StatusChip status={order.statusPedido} size="small" />
       </TableCell>
 
-      {/* ID Entrega */}
       <TableCell sx={{ whiteSpace: 'nowrap', py: 2 }}>
         <GlobalTypography
           variant="caption"
@@ -125,21 +135,18 @@ const OrderTableRow: React.FC<OrderTableRowProps> = React.memo(({ order, onSelec
         </GlobalTypography>
       </TableCell>
 
-      {/* Cliente */}
       <TableCell sx={{ py: 2, minWidth: 160 }}>
         <GlobalTypography variant="body2" sx={{ fontWeight: 600, color: '#0F172A' }}>
           {order.nombreCliente || 'No asignado'}
         </GlobalTypography>
       </TableCell>
 
-      {/* Dirección de Entrega */}
       <TableCell sx={{ py: 2, minWidth: 220 }}>
         <GlobalTypography variant="body2" sx={{ color: '#475569', fontSize: '0.8125rem', lineHeight: 1.35 }}>
           {order.direccionEnvio || 'Dirección pendiente'}
         </GlobalTypography>
       </TableCell>
 
-      {/* Acción */}
       <TableCell align="center" sx={{ whiteSpace: 'nowrap', py: 2 }}>
         <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.8 }}>
           <Tooltip title="Ver pedido">
@@ -156,6 +163,23 @@ const OrderTableRow: React.FC<OrderTableRowProps> = React.memo(({ order, onSelec
               <VisibilityOutlinedIcon sx={{ fontSize: 18 }} />
             </IconButton>
           </Tooltip>
+
+          {onEditOrder && (
+            <Tooltip title="Editar pedido">
+              <IconButton
+                size="small"
+                sx={{
+                  color: '#0284C7',
+                  backgroundColor: '#F0F9FF',
+                  '&:hover': { backgroundColor: '#E0F2FE' },
+                }}
+                onClick={handleEditClick}
+                aria-label={`Editar pedido ${order.codigoProducto}`}
+              >
+                <EditOutlinedIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+          )}
 
           {onDeleteOrder && (
             <AclGuard role="ADMIN">
@@ -186,10 +210,11 @@ OrderTableRow.displayName = 'OrderTableRow';
 interface OrderTableProps {
   orders: Order[];
   onSelectOrder: (order: Order) => void;
+  onEditOrder?: (order: Order) => void;
   onDeleteOrder?: (order: Order) => void;
 }
 
-export const OrderTable: React.FC<OrderTableProps> = React.memo(({ orders, onSelectOrder, onDeleteOrder }) => {
+export const OrderTable: React.FC<OrderTableProps> = React.memo(({ orders, onSelectOrder, onEditOrder, onDeleteOrder }) => {
   return (
     <TableContainer
       component={Paper}
@@ -239,6 +264,7 @@ export const OrderTable: React.FC<OrderTableProps> = React.memo(({ orders, onSel
               key={order.id}
               order={order}
               onSelectOrder={onSelectOrder}
+              onEditOrder={onEditOrder}
               onDeleteOrder={onDeleteOrder}
             />
           ))}
