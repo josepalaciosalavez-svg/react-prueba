@@ -2,6 +2,7 @@ import React, { memo, useState, useCallback, useMemo } from 'react';
 import { Box, Chip, Container, Grid, Paper, TablePagination } from '@mui/material';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
+import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined';
 import {
   Navbar,
   EmptyState,
@@ -14,6 +15,7 @@ import {
   UserCard,
   UsersFilterBar,
   UsersSkeleton,
+  CreateUserModal,
 } from '@/components/users';
 import { useUsers } from '@/hooks/useUsers';
 import { useNavigate } from 'react-router-dom';
@@ -92,6 +94,20 @@ const UsersContent: React.FC = memo(() => {
   } = useUsers(10);
 
   const [selectedUser, setSelectedUser] = useState<SystemUser | null>(null);
+
+  const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false);
+
+  const handleOpenCreate = useCallback(() => {
+    setIsCreateOpen(true);
+  }, []);
+
+  const handleCloseCreate = useCallback(() => {
+    setIsCreateOpen(false);
+  }, []);
+
+  const handleCreateSuccess = useCallback(() => {
+    refresh();
+  }, [refresh]);
 
   const handleSelectUser = useCallback((user: SystemUser | null) => {
     setSelectedUser(user);
@@ -188,6 +204,28 @@ const UsersContent: React.FC = memo(() => {
               </GlobalTypography>
             </Box>
           </Box>
+
+          <GlobalButton
+            variant="contained"
+            startIcon={<PersonAddOutlinedIcon sx={{ fontSize: 20 }} />}
+            onClick={handleOpenCreate}
+            sx={{
+              backgroundColor: '#E10098',
+              color: '#FFFFFF',
+              fontWeight: 700,
+              height: 40,
+              px: 2.5,
+              borderRadius: 2,
+              boxShadow: '0 2px 8px rgba(225, 0, 152, 0.25)',
+              whiteSpace: 'nowrap',
+              '&:hover': {
+                backgroundColor: '#C50084',
+                boxShadow: '0 4px 12px rgba(225, 0, 152, 0.35)',
+              },
+            }}
+          >
+            Nuevo Usuario
+          </GlobalButton>
         </Box>
 
         <UsersFilterBar
@@ -283,6 +321,12 @@ const UsersContent: React.FC = memo(() => {
             </Box>
           </Box>
         )}
+
+        <CreateUserModal
+          open={isCreateOpen}
+          onClose={handleCloseCreate}
+          onSuccess={handleCreateSuccess}
+        />
       </Container>
     </Box>
   );

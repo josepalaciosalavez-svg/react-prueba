@@ -4,3 +4,4 @@ export * from './UserCard';
 export * from './UsersFilterBar';
 export * from './UsersSkeleton';
 export * from './UserSearch';
+export * from './CreateUserModal';

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import axiosInstance from '@/utils/axiosInstance';
 import { notificationStore } from '@/stores/notificationStore';
-import type { SystemUser, UserQueryParams, PagedUsersResponse } from '@/types/user';
+import type { SystemUser, UserQueryParams, PagedUsersResponse, CreateUserDto } from '@/types/user';
 
 function handleUsersApiError(error: unknown, fallbackMessage: string): never {
   if (axios.isCancel(error) || (error instanceof DOMException && error.name === 'AbortError')) {
@@ -69,6 +69,15 @@ export const usersApi = {
     }
   },
 
+  async createUser(payload: CreateUserDto): Promise<SystemUser> {
+    try {
+      const response = await axiosInstance.post('/usuarios', payload);
+      return response.data?.data ?? response.data;
+    } catch (error) {
+      handleUsersApiError(error, 'Error al registrar el nuevo usuario.');
+    }
+  },
+
   async getTypeaheadSuggestions(query: string, signal?: AbortSignal): Promise<SystemUser[]> {
     const term = query.trim();
     if (!term) return [];
@@ -80,3 +89,4 @@ export const usersApi = {
     }
   },
 };
+

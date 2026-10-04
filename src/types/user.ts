@@ -25,3 +25,12 @@ export interface PagedUsersResponse {
   last: boolean;
   first: boolean;
 }
+
+export interface CreateUserDto {
+  nombre: string;
+  email: string;
+  password: string;
+  roles: string[];
+  status: UserStatus;
+}
+
