@@ -1,16 +1,18 @@
 import React, { memo } from 'react';
-import { Avatar, Box, Card, CardContent, Chip, Divider } from '@mui/material';
+import { Avatar, Box, Card, CardContent, Chip, Divider, IconButton, Tooltip } from '@mui/material';
 import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 import FingerprintOutlinedIcon from '@mui/icons-material/FingerprintOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import { GlobalTypography } from '@/components/common';
 import { UserStatusChip } from './UserStatusChip';
 import type { SystemUser } from '@/types/user';
 
 interface UserCardProps {
   user: SystemUser;
+  onEditUser?: (user: SystemUser) => void;
 }
 
-export const UserCard: React.FC<UserCardProps> = memo(({ user }) => {
+export const UserCard: React.FC<UserCardProps> = memo(({ user, onEditUser }) => {
   const formattedDate = user.createdAt
     ? new Date(user.createdAt).toLocaleDateString('es-MX', {
         day: '2-digit',
@@ -55,7 +57,26 @@ export const UserCard: React.FC<UserCardProps> = memo(({ user }) => {
               </GlobalTypography>
             </Box>
           </Box>
-          <UserStatusChip status={user.status} />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+            <UserStatusChip status={user.status} size="small" />
+            <Tooltip title="Editar usuario">
+              <IconButton
+                size="small"
+                onClick={() => onEditUser?.(user)}
+                aria-label={`Editar usuario ${user.nombre}`}
+                sx={{
+                  color: '#64748B',
+                  p: 0.5,
+                  '&:hover': {
+                    color: '#E10098',
+                    backgroundColor: '#FDF2F8',
+                  },
+                }}
+              >
+                <EditOutlinedIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
         </Box>
 
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.6, my: 1.25 }}>

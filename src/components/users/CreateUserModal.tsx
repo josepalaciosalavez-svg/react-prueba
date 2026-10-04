@@ -14,6 +14,7 @@ import {
   type SelectChangeEvent,
 } from '@mui/material';
 import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
@@ -24,11 +25,15 @@ import { usersApi } from '@/api/usersApi';
 import { notificationStore } from '@/stores';
 import type { CreateUserDto, SystemUser, UserStatus } from '@/types/user';
 
-export interface CreateUserModalProps {
+export interface UserModalProps {
   open: boolean;
+  user?: SystemUser | null;
   onClose: () => void;
-  onSuccess?: (createdUser: SystemUser) => void;
+  onSuccess?: (savedUser: SystemUser) => void;
 }
+
+export type CreateUserModalProps = UserModalProps;
+export type EditUserModalProps = UserModalProps;
 
 const AVAILABLE_ROLES = [
   { value: 'ROLE_ADMIN', label: 'Administrador' },
@@ -45,12 +50,27 @@ const INITIAL_FORM: CreateUserDto = {
   status: 'ACTIVO',
 };
 
-const CreateUserModalContent: React.FC<{
+const UserModalContent: React.FC<{
   open: boolean;
+  user?: SystemUser | null;
   onClose: () => void;
-  onSuccess?: (createdUser: SystemUser) => void;
-}> = memo(({ open, onClose, onSuccess }) => {
-  const [formData, setFormData] = useState<CreateUserDto>(INITIAL_FORM);
+  onSuccess?: (savedUser: SystemUser) => void;
+}> = memo(({ open, user, onClose, onSuccess }) => {
+  const isEdit = Boolean(user);
+
+  const [formData, setFormData] = useState<CreateUserDto>(() => {
+    if (user) {
+      return {
+        nombre: user.nombre || '',
+        email: user.email || '',
+        password: '',
+        roles: Array.isArray(user.roles) && user.roles.length > 0 ? user.roles : ['ROLE_OPERATOR'],
+        status: user.status || 'ACTIVO',
+      };
+    }
+    return INITIAL_FORM;
+  });
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -80,8 +100,8 @@ const CreateUserModalContent: React.FC<{
 
     if (!formData.nombre.trim()) {
       newErrors.nombre = 'El nombre completo es requerido.';
-    } else if (formData.nombre.trim().length < 3) {
-      newErrors.nombre = 'El nombre debe tener al menos 3 caracteres.';
+    } else if (formData.nombre.trim().length < 2) {
+      newErrors.nombre = 'El nombre debe tener al menos 2 caracteres.';
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -92,9 +112,9 @@ const CreateUserModalContent: React.FC<{
     }
 
     if (!formData.password) {
-      newErrors.password = 'La contraseña es requerida.';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'La contraseña debe tener al menos 6 caracteres.';
+      newErrors.password = isEdit ? 'Ingresa la contraseña para confirmar los cambios.' : 'La contraseña es requerida.';
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'La contraseña debe tener al menos 8 caracteres.';
     }
 
     if (!formData.roles || formData.roles.length === 0) {
@@ -103,7 +123,7 @@ const CreateUserModalContent: React.FC<{
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData]);
+  }, [formData, isEdit]);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,21 +131,33 @@ const CreateUserModalContent: React.FC<{
 
     setIsSubmitting(true);
     try {
-      const created = await usersApi.createUser({
-        nombre: formData.nombre.trim(),
-        email: formData.email.trim().toLowerCase(),
-        password: formData.password,
-        roles: formData.roles,
-        status: formData.status,
-      });
+      let savedUser: SystemUser;
+      if (isEdit && user) {
+        savedUser = await usersApi.updateUser(user.id, {
+          nombre: formData.nombre.trim(),
+          email: formData.email.trim().toLowerCase(),
+          password: formData.password,
+          roles: formData.roles,
+          status: formData.status,
+        });
+        notificationStore.getState().showSuccess(`Usuario "${savedUser.nombre}" actualizado exitosamente.`);
+      } else {
+        savedUser = await usersApi.createUser({
+          nombre: formData.nombre.trim(),
+          email: formData.email.trim().toLowerCase(),
+          password: formData.password,
+          roles: formData.roles,
+          status: formData.status,
+        });
+        notificationStore.getState().showSuccess(`Usuario "${savedUser.nombre}" creado exitosamente.`);
+      }
 
-      notificationStore.getState().showSuccess(`Usuario "${created.nombre}" creado exitosamente.`);
-      onSuccess?.(created);
+      onSuccess?.(savedUser);
       onClose();
     } catch {
       setIsSubmitting(false);
     }
-  }, [validate, isSubmitting, formData, onSuccess, onClose]);
+  }, [validate, isSubmitting, isEdit, user, formData, onSuccess, onClose]);
 
   const getRoleLabel = (roleVal: string) => {
     const found = AVAILABLE_ROLES.find((r) => r.value === roleVal);
@@ -136,9 +168,19 @@ const CreateUserModalContent: React.FC<{
     <GlobalModal
       open={open}
       onClose={onClose}
-      title="Nuevo Usuario"
-      subtitle="Registra las credenciales y accesos de un nuevo integrante del sistema"
-      icon={<PersonAddOutlinedIcon sx={{ fontSize: 24 }} />}
+      title={isEdit ? 'Editar Usuario' : 'Nuevo Usuario'}
+      subtitle={
+        isEdit
+          ? 'Modifica los datos, roles o credenciales de la cuenta'
+          : 'Registra las credenciales y accesos de un nuevo integrante del sistema'
+      }
+      icon={
+        isEdit ? (
+          <EditOutlinedIcon sx={{ fontSize: 24 }} />
+        ) : (
+          <PersonAddOutlinedIcon sx={{ fontSize: 24 }} />
+        )
+      }
       headerBadgeColor={{ bg: '#FDF2F8', color: '#E10098' }}
       maxWidth="sm"
       fullWidth
@@ -169,7 +211,7 @@ const CreateUserModalContent: React.FC<{
               '&:hover': { backgroundColor: '#C50084' },
             }}
           >
-            Guardar Usuario
+            {isEdit ? 'Actualizar Usuario' : 'Guardar Usuario'}
           </GlobalButton>
         </Box>
       }
@@ -231,12 +273,12 @@ const CreateUserModalContent: React.FC<{
               fullWidth
               size="small"
               type={showPassword ? 'text' : 'password'}
-              label="Contraseña"
-              placeholder="Mínimo 6 caracteres"
+              label={isEdit ? 'Contraseña o Nueva Contraseña' : 'Contraseña'}
+              placeholder="Mínimo 8 caracteres"
               value={formData.password}
               onChange={(e) => handleChange('password', e.target.value)}
               error={Boolean(errors.password)}
-              helperText={errors.password}
+              helperText={errors.password || (isEdit ? 'Ingresa al menos 8 caracteres para confirmar o actualizar' : undefined)}
               disabled={isSubmitting}
               slotProps={{
                 input: {
@@ -268,9 +310,9 @@ const CreateUserModalContent: React.FC<{
 
           <Grid size={{ xs: 12, sm: 7 }}>
             <FormControl fullWidth size="small" error={Boolean(errors.roles)}>
-              <InputLabel id="create-user-roles-label">Roles Asignados</InputLabel>
+              <InputLabel id="user-modal-roles-label">Roles Asignados</InputLabel>
               <Select
-                labelId="create-user-roles-label"
+                labelId="user-modal-roles-label"
                 multiple
                 value={formData.roles}
                 onChange={handleRolesChange}
@@ -307,9 +349,9 @@ const CreateUserModalContent: React.FC<{
 
           <Grid size={{ xs: 12, sm: 5 }}>
             <FormControl fullWidth size="small">
-              <InputLabel id="create-user-status-label">Estatus</InputLabel>
+              <InputLabel id="user-modal-status-label">Estatus</InputLabel>
               <Select
-                labelId="create-user-status-label"
+                labelId="user-modal-status-label"
                 value={formData.status}
                 label="Estatus"
                 onChange={(e) => handleChange('status', e.target.value as UserStatus)}
@@ -326,24 +368,39 @@ const CreateUserModalContent: React.FC<{
   );
 });
 
-CreateUserModalContent.displayName = 'CreateUserModalContent';
+UserModalContent.displayName = 'UserModalContent';
 
-export const CreateUserModal: React.FC<CreateUserModalProps> = memo(({
+export const UserModal: React.FC<UserModalProps> = memo(({
   open,
+  user,
   onClose,
   onSuccess,
 }) => {
   if (!open) return null;
 
   return (
-    <CreateUserModalContent
+    <UserModalContent
+      key={user ? user.id : 'new-user'}
       open={open}
+      user={user}
       onClose={onClose}
       onSuccess={onSuccess}
     />
   );
 });
 
+UserModal.displayName = 'UserModal';
+
+export const CreateUserModal: React.FC<CreateUserModalProps> = memo((props) => (
+  <UserModal {...props} user={null} />
+));
+
 CreateUserModal.displayName = 'CreateUserModal';
 
-export default CreateUserModal;
+export const EditUserModal: React.FC<EditUserModalProps> = memo((props) => (
+  <UserModal {...props} />
+));
+
+EditUserModal.displayName = 'EditUserModal';
+
+export default UserModal;

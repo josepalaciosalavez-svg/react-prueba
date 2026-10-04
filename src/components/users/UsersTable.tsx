@@ -3,6 +3,7 @@ import {
   Avatar,
   Box,
   Chip,
+  IconButton,
   Paper,
   Table,
   TableBody,
@@ -11,16 +12,19 @@ import {
   TableHead,
   TablePagination,
   TableRow,
+  Tooltip,
 } from '@mui/material';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import { GlobalTypography } from '@/components/common';
 import { UserStatusChip } from './UserStatusChip';
 import type { SystemUser } from '@/types/user';
 
 interface UserTableRowProps {
   user: SystemUser;
+  onEdit?: (user: SystemUser) => void;
 }
 
-const UserTableRow: React.FC<UserTableRowProps> = memo(({ user }) => {
+const UserTableRow: React.FC<UserTableRowProps> = memo(({ user, onEdit }) => {
   const formattedDate = user.createdAt
     ? new Date(user.createdAt).toLocaleDateString('es-MX', {
         day: '2-digit',
@@ -126,6 +130,25 @@ const UserTableRow: React.FC<UserTableRowProps> = memo(({ user }) => {
           {formattedDate}
         </GlobalTypography>
       </TableCell>
+
+      <TableCell align="right" sx={{ py: 1.5, whiteSpace: 'nowrap' }}>
+        <Tooltip title="Editar usuario">
+          <IconButton
+            size="small"
+            onClick={() => onEdit?.(user)}
+            aria-label={`Editar usuario ${user.nombre}`}
+            sx={{
+              color: '#64748B',
+              '&:hover': {
+                color: '#E10098',
+                backgroundColor: '#FDF2F8',
+              },
+            }}
+          >
+            <EditOutlinedIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Tooltip>
+      </TableCell>
     </TableRow>
   );
 });
@@ -139,6 +162,7 @@ interface UsersTableProps {
   totalElements: number;
   onPageChange: (newPage: number) => void;
   onRowsPerPageChange: (newSize: number) => void;
+  onEditUser?: (user: SystemUser) => void;
 }
 
 export const UsersTable: React.FC<UsersTableProps> = memo(({
@@ -148,6 +172,7 @@ export const UsersTable: React.FC<UsersTableProps> = memo(({
   totalElements,
   onPageChange,
   onRowsPerPageChange,
+  onEditUser,
 }) => {
   return (
     <TableContainer
@@ -178,11 +203,14 @@ export const UsersTable: React.FC<UsersTableProps> = memo(({
             <TableCell sx={{ fontWeight: 700, color: '#475569', fontSize: '0.8125rem', py: 1.75 }}>
               Fecha de Registro
             </TableCell>
+            <TableCell align="right" sx={{ fontWeight: 700, color: '#475569', fontSize: '0.8125rem', py: 1.75 }}>
+              Acciones
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {users.map((user) => (
-            <UserTableRow key={user.id} user={user} />
+            <UserTableRow key={user.id} user={user} onEdit={onEditUser} />
           ))}
         </TableBody>
       </Table>

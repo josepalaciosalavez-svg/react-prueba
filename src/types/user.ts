@@ -34,3 +34,12 @@ export interface CreateUserDto {
   status: UserStatus;
 }
 
+export interface UpdateUserDto {
+  nombre: string;
+  email: string;
+  password?: string;
+  roles: string[];
+  status: UserStatus;
+}
+
+

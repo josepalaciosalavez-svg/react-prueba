@@ -1,7 +1,7 @@
 import axios from 'axios';
 import axiosInstance from '@/utils/axiosInstance';
 import { notificationStore } from '@/stores/notificationStore';
-import type { SystemUser, UserQueryParams, PagedUsersResponse, CreateUserDto } from '@/types/user';
+import type { SystemUser, UserQueryParams, PagedUsersResponse, CreateUserDto, UpdateUserDto } from '@/types/user';
 
 function handleUsersApiError(error: unknown, fallbackMessage: string): never {
   if (axios.isCancel(error) || (error instanceof DOMException && error.name === 'AbortError')) {
@@ -75,6 +75,15 @@ export const usersApi = {
       return response.data?.data ?? response.data;
     } catch (error) {
       handleUsersApiError(error, 'Error al registrar el nuevo usuario.');
+    }
+  },
+
+  async updateUser(id: string, payload: UpdateUserDto): Promise<SystemUser> {
+    try {
+      const response = await axiosInstance.put(`/usuarios/${id}`, payload);
+      return response.data?.data ?? response.data;
+    } catch (error) {
+      handleUsersApiError(error, 'Error al actualizar el usuario.');
     }
   },
 

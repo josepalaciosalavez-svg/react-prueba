@@ -15,7 +15,7 @@ import {
   UserCard,
   UsersFilterBar,
   UsersSkeleton,
-  CreateUserModal,
+  UserModal,
 } from '@/components/users';
 import { useUsers } from '@/hooks/useUsers';
 import { useNavigate } from 'react-router-dom';
@@ -95,17 +95,25 @@ const UsersContent: React.FC = memo(() => {
 
   const [selectedUser, setSelectedUser] = useState<SystemUser | null>(null);
 
-  const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false);
+  const [selectedUserForModal, setSelectedUserForModal] = useState<SystemUser | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   const handleOpenCreate = useCallback(() => {
-    setIsCreateOpen(true);
+    setSelectedUserForModal(null);
+    setIsModalOpen(true);
   }, []);
 
-  const handleCloseCreate = useCallback(() => {
-    setIsCreateOpen(false);
+  const handleEditUser = useCallback((user: SystemUser) => {
+    setSelectedUserForModal(user);
+    setIsModalOpen(true);
   }, []);
 
-  const handleCreateSuccess = useCallback(() => {
+  const handleCloseModal = useCallback(() => {
+    setIsModalOpen(false);
+    setSelectedUserForModal(null);
+  }, []);
+
+  const handleModalSuccess = useCallback(() => {
     refresh();
   }, [refresh]);
 
@@ -285,6 +293,7 @@ const UsersContent: React.FC = memo(() => {
                 totalElements={totalElements}
                 onPageChange={setPage}
                 onRowsPerPageChange={setSize}
+                onEditUser={handleEditUser}
               />
             </Box>
 
@@ -292,7 +301,7 @@ const UsersContent: React.FC = memo(() => {
               <Grid container spacing={2}>
                 {displayedUsers.map((user) => (
                   <Grid key={user.id} size={{ xs: 12, sm: 6 }}>
-                    <UserCard user={user} />
+                    <UserCard user={user} onEditUser={handleEditUser} />
                   </Grid>
                 ))}
               </Grid>
@@ -322,10 +331,11 @@ const UsersContent: React.FC = memo(() => {
           </Box>
         )}
 
-        <CreateUserModal
-          open={isCreateOpen}
-          onClose={handleCloseCreate}
-          onSuccess={handleCreateSuccess}
+        <UserModal
+          open={isModalOpen}
+          user={selectedUserForModal}
+          onClose={handleCloseModal}
+          onSuccess={handleModalSuccess}
         />
       </Container>
     </Box>
