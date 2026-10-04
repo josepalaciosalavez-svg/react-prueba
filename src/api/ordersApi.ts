@@ -1,7 +1,56 @@
 import axios from 'axios';
 import axiosInstance from '@/utils/axiosInstance';
 import { notificationStore } from '@/stores/notificationStore';
-import type { Order, OrderSummaryMetrics } from '@/types/order';
+import type { Order, OrderSummaryMetrics, UpdateOrderDto } from '@/types/order';
+
+type ErrorStatusMap = Record<number, string>;
+
+function handleApiError(
+  error: unknown,
+  fallbackMessage: string,
+  statusOverrides?: ErrorStatusMap
+): never {
+  if (axios.isCancel(error) || (error instanceof DOMException && error.name === 'AbortError')) {
+    throw error;
+  }
+
+  let message = fallbackMessage;
+
+  if (axios.isAxiosError(error)) {
+    const status = error.response?.status;
+    const data = error.response?.data as { message?: string; mensaje?: string } | undefined;
+    const serverMessage = data?.message || data?.mensaje;
+
+    if (status && statusOverrides?.[status]) {
+      message = statusOverrides[status];
+    } else if (status === 403) {
+      message = 'Acceso denegado: No cuentas con permisos suficientes para realizar esta acción.';
+    } else if (status === 404) {
+      message = 'El recurso solicitado no fue encontrado o no existe.';
+    } else if (serverMessage) {
+      message = String(serverMessage);
+    } else if (error.message) {
+      message = error.message;
+    }
+  } else if (error instanceof Error) {
+    message = error.message;
+  }
+
+  notificationStore.getState().showError(message);
+  throw error;
+}
+
+async function withErrorHandling<T>(
+  action: () => Promise<T>,
+  fallbackMessage: string,
+  statusOverrides?: ErrorStatusMap
+): Promise<T> {
+  try {
+    return await action();
+  } catch (error) {
+    handleApiError(error, fallbackMessage, statusOverrides);
+  }
+}
 
 export const ordersApi = {
   async getOrders(signal?: AbortSignal): Promise<Order[]> {
@@ -19,35 +68,32 @@ export const ordersApi = {
     return response.data?.data ?? response.data ?? null;
   },
 
-  async deleteOrder(id: string): Promise<boolean> {
-    try {
-      const response = await axiosInstance.delete(`/pedidos/${id}`);
-      return response.status === 200 || response.data?.success === true;
-    } catch (error: unknown) {
-      let errorMessage = 'Ocurrió un error inesperado al eliminar el pedido.';
-
-      if (axios.isAxiosError(error)) {
-        const status = error.response?.status;
-        const data = error.response?.data as { message?: string; mensaje?: string } | undefined;
-        const serverMessage = data?.message || data?.mensaje;
-
-        if (status === 403) {
-          errorMessage = 'Acceso denegado: Se requieren permisos de Administrador para eliminar pedidos.';
-        } else if (status === 404) {
-          errorMessage = 'El pedido no fue encontrado o ya fue eliminado previamente.';
-        } else if (serverMessage) {
-          errorMessage = String(serverMessage);
-        } else if (error.message) {
-          errorMessage = error.message;
-        }
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
+  async updateOrder(id: string, payload: UpdateOrderDto): Promise<Order> {
+    return withErrorHandling(
+      async () => {
+        const response = await axiosInstance.put(`/pedidos/${id}`, payload);
+        return response.data?.data ?? response.data;
+      },
+      'Ocurrió un error inesperado al actualizar el pedido.',
+      {
+        403: 'Acceso denegado: No tienes permisos para actualizar este pedido.',
+        404: 'El pedido no fue encontrado o no existe.',
       }
+    );
+  },
 
-      // Despacho directo a la notificación global sin renderizar componentes intermedios
-      notificationStore.getState().showError(errorMessage);
-      throw error;
-    }
+  async deleteOrder(id: string): Promise<boolean> {
+    return withErrorHandling(
+      async () => {
+        const response = await axiosInstance.delete(`/pedidos/${id}`);
+        return response.status === 200 || response.data?.success === true;
+      },
+      'Ocurrió un error inesperado al eliminar el pedido.',
+      {
+        403: 'Acceso denegado: Se requieren permisos de Administrador para eliminar pedidos.',
+        404: 'El pedido no fue encontrado o ya fue eliminado previamente.',
+      }
+    );
   },
 
   async getTypeaheadSuggestions(query: string, signal?: AbortSignal): Promise<Order[]> {
