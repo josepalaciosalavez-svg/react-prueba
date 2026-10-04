@@ -1,26 +1,16 @@
-import React from 'react';
-import { AppBar, Avatar, Box, Container, Toolbar, Chip } from '@mui/material';
-import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+import React, { memo } from 'react';
+import { AppBar, Box, Container, Toolbar } from '@mui/material';
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
-import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
 import { GlobalButton } from './GlobalButton';
 import { GlobalTypography } from './GlobalTypography';
-import { AclGuard } from './AclGuard';
+import { UserMenu } from './UserMenu';
 
-export const Navbar: React.FC = React.memo(() => {
-  const { user, logout } = useAuth();
+export const Navbar: React.FC = memo(() => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const isOrders = location.pathname.startsWith('/pedidos');
-  const isUsers = location.pathname.startsWith('/usuarios');
-
-  const handleLogout = (): void => {
-    logout();
-    navigate('/login');
-  };
 
   return (
     <AppBar
@@ -106,66 +96,9 @@ export const Navbar: React.FC = React.memo(() => {
             >
               Lista de Pedidos
             </GlobalButton>
-
-            <AclGuard role="ADMIN">
-              <GlobalButton
-                variant="text"
-                startIcon={<PeopleAltOutlinedIcon sx={{ fontSize: 18 }} />}
-                onClick={() => navigate('/usuarios')}
-                sx={{
-                  color: isUsers ? '#E10098' : '#64748B',
-                  backgroundColor: isUsers ? 'rgba(225, 0, 152, 0.08)' : 'transparent',
-                  fontWeight: isUsers ? 700 : 500,
-                  fontSize: '0.875rem',
-                  '&:hover': {
-                    backgroundColor: isUsers ? 'rgba(225, 0, 152, 0.12)' : '#F8FAFC',
-                    color: isUsers ? '#E10098' : '#0F172A',
-                  },
-                }}
-              >
-                Usuarios
-              </GlobalButton>
-            </AclGuard>
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            {user && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <Avatar
-                  src={user.avatar}
-                  alt={user.name}
-                  sx={{ width: 34, height: 34, border: '2px solid #E10098' }}
-                >
-                  {user.name.charAt(0)}
-                </Avatar>
-                <Box sx={{ display: { xs: 'none', sm: 'block' }, textAlign: 'right' }}>
-                  <GlobalTypography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.2 }}>
-                    {user.name}
-                  </GlobalTypography>
-                  <Chip
-                    label={user.role}
-                    size="small"
-                    sx={{
-                      height: 18,
-                      fontSize: '0.65rem',
-                      fontWeight: 700,
-                      backgroundColor: '#F1F5F9',
-                      color: '#475569',
-                    }}
-                  />
-                </Box>
-              </Box>
-            )}
-
-            <GlobalButton
-              variant="outlined"
-              size="small"
-              onClick={handleLogout}
-              startIcon={<LogoutOutlinedIcon sx={{ fontSize: 16 }} />}
-            >
-              Salir
-            </GlobalButton>
-          </Box>
+          <UserMenu />
         </Toolbar>
       </Container>
     </AppBar>
@@ -175,3 +108,4 @@ export const Navbar: React.FC = React.memo(() => {
 Navbar.displayName = 'Navbar';
 
 export default Navbar;
+

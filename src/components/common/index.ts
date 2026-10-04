@@ -10,3 +10,4 @@ export * from './GlobalNotification';
 export * from './GlobalModal';
 export * from './GlobalSkeleton';
 export * from './GlobalFilterBar';
+export * from './UserMenu';
