@@ -5,6 +5,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { liverpoolTheme } from '@/theme/theme';
 import { AuthProvider } from '@/context/AuthContext';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import { GlobalNotification } from '@/components/common/GlobalNotification';
 import { AppRoutes } from '@/routes/AppRoutes';
 
 export const App: React.FC = () => {
@@ -15,6 +16,7 @@ export const App: React.FC = () => {
         <AuthProvider>
           <BrowserRouter>
             <AppRoutes />
+            <GlobalNotification />
           </BrowserRouter>
         </AuthProvider>
       </ThemeProvider>

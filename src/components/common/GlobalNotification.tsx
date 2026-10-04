@@ -30,7 +30,7 @@ export const GlobalNotification: React.FC = React.memo(() => {
       open={open}
       autoHideDuration={autoHideDuration}
       onClose={handleClose}
-      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       slots={{ transition: SlideTransition }}
       sx={{
         bottom: { xs: 16, sm: 24 },

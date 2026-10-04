@@ -13,6 +13,7 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
@@ -24,9 +25,11 @@ import {
   GlobalButton,
   GlobalTypography,
   StatusChip,
+  AclGuard,
 } from '@/components/common';
+import { DeleteOrderDialog } from '@/components/orders';
 import { ordersApi } from '@/api/ordersApi';
-import { useOrderStore } from '@/stores';
+import { useOrderStore, notificationStore } from '@/stores';
 import type { Order } from '@/types/order';
 
 export const OrderDetailPage: React.FC = () => {
@@ -40,6 +43,8 @@ export const OrderDetailPage: React.FC = () => {
   const [order, setOrder] = useState<Order | null>(() => (isMatch ? cachedOrder : null));
   const [isLoading, setIsLoading] = useState<boolean>(() => !isMatch);
   const [error, setError] = useState<string | null>(null);
+  const [openConfirmDelete, setOpenConfirmDelete] = useState<boolean>(false);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
   const missingIdError = !id ? 'Identificador de pedido no proporcionado.' : null;
   const displayError = error || missingIdError;
@@ -117,6 +122,21 @@ export const OrderDetailPage: React.FC = () => {
   const handlePrint = useCallback(() => {
     window.print();
   }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!order) return;
+    setIsDeleting(true);
+    try {
+      await ordersApi.deleteOrder(order.id);
+      notificationStore.getState().showSuccess(`Pedido #${order.codigoProducto} eliminado exitosamente.`);
+      setOpenConfirmDelete(false);
+      navigate('/pedidos', { replace: true });
+    } catch (error) {
+      //console.log('error on order: ', error)
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [order, navigate]);
 
   const formattedDates = useMemo(() => {
     if (!order) return { created: 'N/A', updated: 'N/A' };
@@ -206,6 +226,25 @@ export const OrderDetailPage: React.FC = () => {
               >
                 Imprimir Comprobante
               </GlobalButton>
+            )}
+
+            {order && (
+              <AclGuard role="ADMIN">
+                <GlobalButton
+                  variant="contained"
+                  color="error"
+                  size="small"
+                  startIcon={<DeleteOutlineOutlinedIcon />}
+                  onClick={() => setOpenConfirmDelete(true)}
+                  sx={{
+                    height: 38,
+                    backgroundColor: '#DC2626',
+                    '&:hover': { backgroundColor: '#B91C1C' },
+                  }}
+                >
+                  Eliminar Pedido
+                </GlobalButton>
+              </AclGuard>
             )}
           </Box>
         </Box>
@@ -518,6 +557,15 @@ export const OrderDetailPage: React.FC = () => {
             </Grid>
           </Box>
         )}
+
+        {/* Diálogo de Confirmación de Borrado */}
+        <DeleteOrderDialog
+          open={openConfirmDelete}
+          order={order}
+          isDeleting={isDeleting}
+          onConfirm={handleConfirmDelete}
+          onClose={() => !isDeleting && setOpenConfirmDelete(false)}
+        />
       </Container>
     </Box>
   );

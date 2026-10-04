@@ -6,3 +6,5 @@ export * from './ErrorBoundary';
 export * from './Navbar';
 export * from './StatusChip';
 export * from './AclGuard';
+export * from './GlobalNotification';
+export * from './GlobalModal';

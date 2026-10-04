@@ -1,18 +1,20 @@
 import React from 'react';
-import { Box, Card, CardContent, Chip, Divider } from '@mui/material';
+import { Box, Card, CardContent, Chip, Divider, IconButton, Tooltip } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
-import { StatusChip, GlobalTypography } from '@/components/common';
+import { StatusChip, GlobalTypography, AclGuard } from '@/components/common';
 import type { Order } from '@/types/order';
 
 interface OrderCardProps {
   order: Order;
   onSelectOrder: (order: Order) => void;
+  onDeleteOrder?: (order: Order) => void;
 }
 
-export const OrderCard: React.FC<OrderCardProps> = React.memo(({ order, onSelectOrder }) => {
+export const OrderCard: React.FC<OrderCardProps> = React.memo(({ order, onSelectOrder, onDeleteOrder }) => {
   const formattedDate = order.createdAt
     ? new Date(order.createdAt).toLocaleDateString('es-MX', {
       day: '2-digit',
@@ -104,9 +106,33 @@ export const OrderCard: React.FC<OrderCardProps> = React.memo(({ order, onSelect
             </GlobalTypography>
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', color: '#E10098', fontWeight: 600, fontSize: '0.8125rem' }}>
-            Ver detalle
-            <ChevronRightIcon sx={{ fontSize: 18, ml: 0.2 }} />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {onDeleteOrder && (
+              <AclGuard role="ADMIN">
+                <Tooltip title="Eliminar pedido">
+                  <IconButton
+                    size="small"
+                    sx={{
+                      color: '#EF4444',
+                      backgroundColor: '#FEF2F2',
+                      '&:hover': { backgroundColor: '#FEE2E2' },
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteOrder(order);
+                    }}
+                    aria-label={`Eliminar pedido ${order.codigoProducto}`}
+                  >
+                    <DeleteOutlineOutlinedIcon sx={{ fontSize: 18 }} />
+                  </IconButton>
+                </Tooltip>
+              </AclGuard>
+            )}
+
+            <Box sx={{ display: 'flex', alignItems: 'center', color: '#E10098', fontWeight: 600, fontSize: '0.8125rem' }}>
+              Ver detalle
+              <ChevronRightIcon sx={{ fontSize: 18, ml: 0.2 }} />
+            </Box>
           </Box>
         </Box>
       </CardContent>

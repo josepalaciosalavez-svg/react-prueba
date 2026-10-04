@@ -9,6 +9,7 @@ interface UseOrdersReturn {
   metrics: OrderSummaryMetrics;
   error: string | null;
   refresh: () => Promise<void>;
+  removeOrder: (id: string) => Promise<boolean>;
 }
 
 export function useOrders(): UseOrdersReturn {
@@ -51,6 +52,19 @@ export function useOrders(): UseOrdersReturn {
     await loadData();
   }, [loadData]);
 
+  const removeOrder = useCallback(async (id: string): Promise<boolean> => {
+    try {
+      await ordersApi.deleteOrder(id);
+      setOrders((prev) => prev.filter((o) => o.id !== id));
+      setAllOrders((prev) => prev.filter((o) => o.id !== id));
+      return true;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Error al eliminar el pedido';
+      setError(message);
+      throw err;
+    }
+  }, []);
+
   const metrics = useMemo<OrderSummaryMetrics>(() => {
     return ordersApi.calculateMetrics(allOrders);
   }, [allOrders]);
@@ -62,5 +76,6 @@ export function useOrders(): UseOrdersReturn {
     isLoading,
     error,
     refresh,
+    removeOrder,
   };
 }

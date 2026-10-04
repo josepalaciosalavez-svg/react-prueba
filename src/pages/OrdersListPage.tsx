@@ -13,23 +13,50 @@ import {
   OrderTable,
   OrderSearch,
   OrderListSkeleton,
+  DeleteOrderDialog,
 } from '@/components/orders';
 import { useOrders } from '@/hooks/useOrders';
-import { useOrderStore } from '@/stores';
+import { useOrderStore, notificationStore } from '@/stores';
 import type { Order } from '@/types/order';
 
 export const OrdersListPage: React.FC = () => {
   const navigate = useNavigate();
-  const { orders, metrics, isLoading, refresh } = useOrders();
+  const { orders, metrics, isLoading, refresh, removeOrder } = useOrders();
   const setStoreOrder = useOrderStore((state) => state.setSelectedOrder);
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
   const handleSelectOrder = useCallback((order: Order) => {
     setStoreOrder(order);
     navigate(`/pedidos/${order.id}`);
   }, [navigate, setStoreOrder]);
+
+  const handleRequestDelete = useCallback((order: Order) => {
+    setOrderToDelete(order);
+  }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!orderToDelete) return;
+    setIsDeleting(true);
+    try {
+      await removeOrder(orderToDelete.id);
+      notificationStore.getState().showSuccess(`Pedido #${orderToDelete.codigoProducto} eliminado exitosamente.`);
+      setOrderToDelete(null);
+    } catch {
+      // El error es capturado y notificado automáticamente por deleteOrder
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [orderToDelete, removeOrder]);
+
+  const handleCloseDelete = useCallback(() => {
+    if (!isDeleting) {
+      setOrderToDelete(null);
+    }
+  }, [isDeleting]);
 
   const handleSearchSelect = useCallback((order: Order | null) => {
     setSelectedOrder(order);
@@ -177,7 +204,11 @@ export const OrdersListPage: React.FC = () => {
           <Box>
             {/* Tabla en Escritorio */}
             <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-              <OrderTable orders={displayedOrders} onSelectOrder={handleSelectOrder} />
+              <OrderTable
+                orders={displayedOrders}
+                onSelectOrder={handleSelectOrder}
+                onDeleteOrder={handleRequestDelete}
+              />
             </Box>
 
             {/* Cuadrícula de Tarjetas en Móviles y Tablets */}
@@ -185,7 +216,11 @@ export const OrdersListPage: React.FC = () => {
               <Grid container spacing={2}>
                 {displayedOrders.map((order) => (
                   <Grid key={order.id} size={{ xs: 12, sm: 6 }}>
-                    <OrderCard order={order} onSelectOrder={handleSelectOrder} />
+                    <OrderCard
+                      order={order}
+                      onSelectOrder={handleSelectOrder}
+                      onDeleteOrder={handleRequestDelete}
+                    />
                   </Grid>
                 ))}
               </Grid>
@@ -209,6 +244,15 @@ export const OrdersListPage: React.FC = () => {
             </Box>
           </Box>
         )}
+
+        {/* Diálogo de Confirmación de Borrado */}
+        <DeleteOrderDialog
+          open={Boolean(orderToDelete)}
+          order={orderToDelete}
+          isDeleting={isDeleting}
+          onConfirm={handleConfirmDelete}
+          onClose={handleCloseDelete}
+        />
       </Container>
     </Box>
   );

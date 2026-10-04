@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Box,
   Chip,
   IconButton,
   Paper,
@@ -12,15 +13,17 @@ import {
   Tooltip,
 } from '@mui/material';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import { StatusChip, GlobalTypography } from '@/components/common';
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import { StatusChip, GlobalTypography, AclGuard } from '@/components/common';
 import type { Order } from '@/types/order';
 
 interface OrderTableRowProps {
   order: Order;
   onSelectOrder: (order: Order) => void;
+  onDeleteOrder?: (order: Order) => void;
 }
 
-const OrderTableRow: React.FC<OrderTableRowProps> = React.memo(({ order, onSelectOrder }) => {
+const OrderTableRow: React.FC<OrderTableRowProps> = React.memo(({ order, onSelectOrder, onDeleteOrder }) => {
   const formattedDate = order.createdAt
     ? new Date(order.createdAt).toLocaleDateString('es-MX', {
         day: '2-digit',
@@ -45,6 +48,14 @@ const OrderTableRow: React.FC<OrderTableRowProps> = React.memo(({ order, onSelec
       onSelectOrder(order);
     },
     [order, onSelectOrder]
+  );
+
+  const handleDeleteClick = React.useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onDeleteOrder?.(order);
+    },
+    [order, onDeleteOrder]
   );
 
   return (
@@ -130,20 +141,41 @@ const OrderTableRow: React.FC<OrderTableRowProps> = React.memo(({ order, onSelec
 
       {/* Acción */}
       <TableCell align="center" sx={{ whiteSpace: 'nowrap', py: 2 }}>
-        <Tooltip title="Ver pedido">
-          <IconButton
-            size="small"
-            sx={{
-              color: '#E10098',
-              backgroundColor: '#FDF2F8',
-              '&:hover': { backgroundColor: '#FCE7F3' },
-            }}
-            onClick={handleActionClick}
-            aria-label={`Ver pedido ${order.codigoProducto}`}
-          >
-            <VisibilityOutlinedIcon sx={{ fontSize: 18 }} />
-          </IconButton>
-        </Tooltip>
+        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.8 }}>
+          <Tooltip title="Ver pedido">
+            <IconButton
+              size="small"
+              sx={{
+                color: '#E10098',
+                backgroundColor: '#FDF2F8',
+                '&:hover': { backgroundColor: '#FCE7F3' },
+              }}
+              onClick={handleActionClick}
+              aria-label={`Ver pedido ${order.codigoProducto}`}
+            >
+              <VisibilityOutlinedIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Tooltip>
+
+          {onDeleteOrder && (
+            <AclGuard role="ADMIN">
+              <Tooltip title="Eliminar pedido">
+                <IconButton
+                  size="small"
+                  sx={{
+                    color: '#EF4444',
+                    backgroundColor: '#FEF2F2',
+                    '&:hover': { backgroundColor: '#FEE2E2' },
+                  }}
+                  onClick={handleDeleteClick}
+                  aria-label={`Eliminar pedido ${order.codigoProducto}`}
+                >
+                  <DeleteOutlineOutlinedIcon sx={{ fontSize: 18 }} />
+                </IconButton>
+              </Tooltip>
+            </AclGuard>
+          )}
+        </Box>
       </TableCell>
     </TableRow>
   );
@@ -154,9 +186,10 @@ OrderTableRow.displayName = 'OrderTableRow';
 interface OrderTableProps {
   orders: Order[];
   onSelectOrder: (order: Order) => void;
+  onDeleteOrder?: (order: Order) => void;
 }
 
-export const OrderTable: React.FC<OrderTableProps> = React.memo(({ orders, onSelectOrder }) => {
+export const OrderTable: React.FC<OrderTableProps> = React.memo(({ orders, onSelectOrder, onDeleteOrder }) => {
   return (
     <TableContainer
       component={Paper}
@@ -202,7 +235,12 @@ export const OrderTable: React.FC<OrderTableProps> = React.memo(({ orders, onSel
         </TableHead>
         <TableBody>
           {orders.map((order) => (
-            <OrderTableRow key={order.id} order={order} onSelectOrder={onSelectOrder} />
+            <OrderTableRow
+              key={order.id}
+              order={order}
+              onSelectOrder={onSelectOrder}
+              onDeleteOrder={onDeleteOrder}
+            />
           ))}
         </TableBody>
       </Table>
