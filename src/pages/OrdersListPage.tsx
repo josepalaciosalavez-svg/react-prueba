@@ -7,15 +7,18 @@ import {
   EmptyState,
   GlobalButton,
   GlobalTypography,
+  GlobalFilterBar,
+  GlobalSearch,
+  StatusChip,
 } from '@/components/common';
 import {
   OrderCard,
   OrderTable,
-  OrderSearch,
   OrderListSkeleton,
   DeleteOrderDialog,
   EditOrderModal,
 } from '@/components/orders';
+import { ordersApi } from '@/api/ordersApi';
 import { useOrders } from '@/hooks/useOrders';
 import { useOrderStore, notificationStore } from '@/stores';
 import type { Order } from '@/types/order';
@@ -140,43 +143,84 @@ export const OrdersListPage: React.FC = () => {
             </GlobalTypography>
           </Box>
 
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', sm: 'row' },
-              alignItems: { xs: 'stretch', sm: 'center' },
-              gap: 1.5,
-              width: { xs: '100%', md: 'auto' },
-            }}
-          >
-            <Box sx={{ width: { xs: '100%', sm: 320, md: 400, lg: 440 } }}>
-              <OrderSearch
-                value={searchQuery}
-                onSelectOrder={handleSearchSelect}
-                onQueryChange={handleSearchChange}
-              />
-            </Box>
-
-            <GlobalButton
-              variant="outlined"
-              size="medium"
-              startIcon={<RefreshIcon />}
-              onClick={refresh}
-              loading={isLoading}
-              sx={{
-                color: '#E10098',
-                borderColor: '#FCE7F3',
-                backgroundColor: '#FFFFFF',
-                fontWeight: 600,
-                '&:hover': {
-                  borderColor: '#E10098',
-                  backgroundColor: '#FDF2F8',
-                },
-              }}
-            >
-              Actualizar
-            </GlobalButton>
-          </Box>
+          <GlobalFilterBar
+            sx={{ mb: 0 }}
+            searchSlot={
+              <Box sx={{ width: { xs: '100%', sm: 320, md: 400, lg: 440 } }}>
+                <GlobalSearch<Order>
+                  value={searchQuery}
+                  fetchOptions={(q, signal) => ordersApi.getTypeaheadSuggestions(q, signal)}
+                  getOptionLabel={(order) => `${order.codigoProducto} - ${order.nombreCliente || 'Sin cliente'}`}
+                  getOptionKey={(order) => order.id}
+                  placeholder="Buscar por código, cliente o entrega..."
+                  onSelect={handleSearchSelect}
+                  onQueryChange={handleSearchChange}
+                  renderOptionContent={(order) => {
+                    const total = order.total ?? (order.precio * order.cantidad);
+                    return (
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', py: 0.5 }}>
+                        <Box sx={{ minWidth: 0, mr: 1.5 }}>
+                          <GlobalTypography
+                            variant="body2"
+                            sx={{
+                              fontWeight: 700,
+                              color: '#0F172A',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                          >
+                            {order.codigoProducto}
+                          </GlobalTypography>
+                          <GlobalTypography
+                            variant="caption"
+                            sx={{
+                              color: '#64748B',
+                              display: 'block',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                          >
+                            {order.nombreCliente || 'Sin cliente asignado'} • {order.entregaId}
+                          </GlobalTypography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+                          <GlobalTypography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>
+                            ${total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                          </GlobalTypography>
+                          <StatusChip status={order.statusPedido} size="small" />
+                        </Box>
+                      </Box>
+                    );
+                  }}
+                />
+              </Box>
+            }
+            actionsSlot={
+              <GlobalButton
+                variant="outlined"
+                size="medium"
+                startIcon={<RefreshIcon />}
+                onClick={refresh}
+                loading={isLoading}
+                sx={{
+                  color: '#E10098',
+                  borderColor: '#FCE7F3',
+                  backgroundColor: '#FFFFFF',
+                  fontWeight: 600,
+                  height: 40,
+                  whiteSpace: 'nowrap',
+                  '&:hover': {
+                    borderColor: '#E10098',
+                    backgroundColor: '#FDF2F8',
+                  },
+                }}
+              >
+                Actualizar
+              </GlobalButton>
+            }
+          />
         </Box>
 
         {hasActiveFilter && (

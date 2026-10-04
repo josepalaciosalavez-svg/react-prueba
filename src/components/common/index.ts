@@ -9,3 +9,4 @@ export * from './AclGuard';
 export * from './GlobalNotification';
 export * from './GlobalModal';
 export * from './GlobalSkeleton';
+export * from './GlobalFilterBar';

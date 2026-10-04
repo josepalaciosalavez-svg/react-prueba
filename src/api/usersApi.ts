@@ -68,4 +68,15 @@ export const usersApi = {
       handleUsersApiError(error, 'Error al consultar el detalle del usuario.');
     }
   },
+
+  async getTypeaheadSuggestions(query: string, signal?: AbortSignal): Promise<SystemUser[]> {
+    const term = query.trim();
+    if (!term) return [];
+    try {
+      const response = await this.getUsers({ search: term, size: 8 }, signal);
+      return response.content;
+    } catch {
+      return [];
+    }
+  },
 };

@@ -11,6 +11,7 @@ import {
   Autocomplete,
   Box,
   CircularProgress,
+  IconButton,
   InputAdornment,
   TextField,
   type AutocompleteRenderOptionState,
@@ -18,49 +19,37 @@ import {
   type Theme,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
 import { GlobalTypography } from './GlobalTypography';
 
 export interface GlobalSearchProps<T> {
-
-  fetchOptions: (query: string, signal: AbortSignal) => Promise<T[]>;
-
-  getOptionLabel: (option: T) => string;
-
+  fetchOptions?: (query: string, signal: AbortSignal) => Promise<T[]>;
+  options?: T[];
+  filterOption?: (option: T, query: string) => boolean;
+  getOptionLabel?: (option: T) => string;
   getOptionKey?: (option: T) => string | number;
-
   renderOptionContent?: (option: T, state: AutocompleteRenderOptionState) => React.ReactNode;
-
-  onSelect: (option: T | null) => void;
-
+  onSelect?: (option: T | null) => void;
   onQueryChange?: (query: string) => void;
-
   value?: string;
-
   placeholder?: string;
-
   minQueryLength?: number;
-
   debounceMs?: number;
-
   size?: 'small' | 'medium';
-
   fullWidth?: boolean;
-
   disabled?: boolean;
-
   cacheSize?: number;
-
   noOptionsText?: React.ReactNode;
-
   loadingText?: React.ReactNode;
-
   sx?: SxProps<Theme>;
 }
 
 function GlobalSearchInner<T>(
   {
     fetchOptions,
-    getOptionLabel,
+    options: staticOptions,
+    filterOption,
+    getOptionLabel: customGetOptionLabel,
     getOptionKey,
     renderOptionContent,
     onSelect,
@@ -81,7 +70,7 @@ function GlobalSearchInner<T>(
 ) {
   const [prevValue, setPrevValue] = useState<string>(value);
   const [inputValue, setInputValue] = useState<string>(value);
-  const [options, setOptions] = useState<T[]>([]);
+  const [dynamicOptions, setDynamicOptions] = useState<T[]>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -107,19 +96,44 @@ function GlobalSearchInner<T>(
     };
   }, []);
 
+  const getOptionLabel = useCallback(
+    (option: T): string => {
+      if (customGetOptionLabel) {
+        return customGetOptionLabel(option);
+      }
+      if (typeof option === 'string') return option;
+      if (!option || typeof option !== 'object') return String(option);
+      const obj = option as Record<string, unknown>;
+      if (typeof obj.codigoProducto === 'string') {
+        return `${obj.codigoProducto}${obj.nombreCliente ? ` - ${obj.nombreCliente}` : ''}`;
+      }
+      if (typeof obj.nombre === 'string') {
+        return `${obj.nombre}${obj.email ? ` (${obj.email})` : ''}`;
+      }
+      if (typeof obj.label === 'string') return obj.label;
+      if (typeof obj.name === 'string') return obj.name;
+      if (typeof obj.title === 'string') return obj.title;
+      if (obj.id !== undefined && obj.id !== null) return String(obj.id);
+      return String(option);
+    },
+    [customGetOptionLabel]
+  );
+
   const executeSearch = useCallback(
     async (queryTerm: string) => {
+      if (!fetchOptions) return;
+
       const normalizedQuery = queryTerm.trim();
 
       if (normalizedQuery.length < minQueryLength) {
-        setOptions([]);
+        setDynamicOptions([]);
         setIsLoading(false);
         return;
       }
 
       const cached = cacheRef.current.get(normalizedQuery);
       if (cached) {
-        setOptions(cached);
+        setDynamicOptions(cached);
         setIsLoading(false);
         return;
       }
@@ -144,14 +158,14 @@ function GlobalSearchInner<T>(
             }
           }
           cacheRef.current.set(normalizedQuery, results);
-          setOptions(results);
+          setDynamicOptions(results);
         }
       } catch (err: unknown) {
         if (err instanceof DOMException && err.name === 'AbortError') {
           return;
         }
         if (!controller.signal.aborted) {
-          setOptions([]);
+          setDynamicOptions([]);
         }
       } finally {
         if (!controller.signal.aborted) {
@@ -166,7 +180,7 @@ function GlobalSearchInner<T>(
     (_: React.SyntheticEvent, newInputValue: string, reason: string) => {
       if (reason === 'reset' && !newInputValue) {
         setInputValue('');
-        setOptions([]);
+        setDynamicOptions([]);
         onQueryChange?.('');
         return;
       }
@@ -179,7 +193,7 @@ function GlobalSearchInner<T>(
       }
 
       if (!newInputValue.trim()) {
-        setOptions([]);
+        setDynamicOptions([]);
         setIsLoading(false);
         if (abortControllerRef.current) {
           abortControllerRef.current.abort();
@@ -187,11 +201,13 @@ function GlobalSearchInner<T>(
         return;
       }
 
-      debounceTimerRef.current = setTimeout(() => {
-        executeSearch(newInputValue);
-      }, debounceMs);
+      if (fetchOptions) {
+        debounceTimerRef.current = setTimeout(() => {
+          executeSearch(newInputValue);
+        }, debounceMs);
+      }
     },
-    [onQueryChange, executeSearch, debounceMs]
+    [onQueryChange, fetchOptions, executeSearch, debounceMs]
   );
 
   const handleOptionSelect = useCallback(
@@ -199,8 +215,8 @@ function GlobalSearchInner<T>(
       setIsOpen(false);
       if (!selectedItem) {
         setInputValue('');
-        setOptions([]);
-        onSelect(null);
+        setDynamicOptions([]);
+        onSelect?.(null);
         return;
       }
 
@@ -211,10 +227,30 @@ function GlobalSearchInner<T>(
 
       const label = getOptionLabel(selectedItem);
       setInputValue(label);
-      onSelect(selectedItem);
+      onSelect?.(selectedItem);
     },
     [getOptionLabel, onSelect]
   );
+
+  const handleClear = useCallback(() => {
+    setInputValue('');
+    setDynamicOptions([]);
+    setIsOpen(false);
+    onQueryChange?.('');
+    onSelect?.(null);
+  }, [onQueryChange, onSelect]);
+
+  const currentOptions = useMemo(() => {
+    if (staticOptions) {
+      const q = inputValue.trim().toLowerCase();
+      if (q.length < minQueryLength) return [];
+      return staticOptions.filter((opt) => {
+        if (filterOption) return filterOption(opt, q);
+        return getOptionLabel(opt).toLowerCase().includes(q);
+      });
+    }
+    return dynamicOptions;
+  }, [staticOptions, inputValue, minQueryLength, filterOption, getOptionLabel, dynamicOptions]);
 
   const noOptionsContent = useMemo(
     () => (
@@ -309,7 +345,8 @@ function GlobalSearchInner<T>(
     [getOptionKey, getOptionLabel, renderOptionContent]
   );
 
-  const shouldOpen = isOpen && (inputValue.trim().length >= minQueryLength || options.length > 0);
+  const isSearchable = Boolean(fetchOptions || staticOptions);
+  const shouldOpen = isOpen && isSearchable && (inputValue.trim().length >= minQueryLength || currentOptions.length > 0);
 
   return (
     <Autocomplete
@@ -323,7 +360,7 @@ function GlobalSearchInner<T>(
       inputValue={inputValue}
       onInputChange={handleInputChange}
       onChange={handleOptionSelect}
-      options={options}
+      options={currentOptions}
       filterOptions={(x) => x}
       getOptionLabel={(opt) => (typeof opt === 'string' ? opt : getOptionLabel(opt))}
       noOptionsText={noOptionsContent}
@@ -376,7 +413,18 @@ function GlobalSearchInner<T>(
               endAdornment: (
                 <>
                   {isLoading ? (
-                    <CircularProgress size={18} sx={{ color: '#E10098', mr: 1 }} />
+                    <CircularProgress size={18} sx={{ color: '#E10098', mr: 0.5 }} />
+                  ) : null}
+                  {inputValue ? (
+                    <IconButton
+                      size="small"
+                      onClick={handleClear}
+                      edge="end"
+                      aria-label="Limpiar búsqueda"
+                      sx={{ color: '#94A3B8', p: 0.5, mr: 0.25 }}
+                    >
+                      <ClearIcon sx={{ fontSize: 18 }} />
+                    </IconButton>
                   ) : null}
                   {params.slotProps.input.endAdornment}
                 </>

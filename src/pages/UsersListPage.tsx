@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useState, useCallback, useMemo } from 'react';
 import { Box, Chip, Container, Grid, Paper, TablePagination } from '@mui/material';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
@@ -17,6 +17,7 @@ import {
 } from '@/components/users';
 import { useUsers } from '@/hooks/useUsers';
 import { useNavigate } from 'react-router-dom';
+import type { SystemUser } from '@/types/user';
 
 const AccessDeniedView: React.FC = memo(() => {
   const navigate = useNavigate();
@@ -90,7 +91,36 @@ const UsersContent: React.FC = memo(() => {
     refresh,
   } = useUsers(10);
 
-  const hasFilter = Boolean(search || status);
+  const [selectedUser, setSelectedUser] = useState<SystemUser | null>(null);
+
+  const handleSelectUser = useCallback((user: SystemUser | null) => {
+    setSelectedUser(user);
+    if (user) {
+      setSearch(user.email || user.nombre);
+    }
+  }, [setSearch]);
+
+  const handleSearchChange = useCallback((query: string) => {
+    setSearch(query);
+    if (!query) {
+      setSelectedUser(null);
+    }
+  }, [setSearch]);
+
+  const handleClearFilter = useCallback(() => {
+    setSelectedUser(null);
+    setSearch('');
+    setStatus('');
+  }, [setSearch, setStatus]);
+
+  const displayedUsers = useMemo(() => {
+    if (selectedUser) {
+      return users.filter((u) => u.id === selectedUser.id);
+    }
+    return users;
+  }, [selectedUser, users]);
+
+  const hasFilter = Boolean(search || status || selectedUser);
 
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#F8FAFC', pb: { xs: 6, sm: 8 } }}>
@@ -163,14 +193,38 @@ const UsersContent: React.FC = memo(() => {
         <UsersFilterBar
           status={status}
           isLoading={isLoading}
-          onSearchChange={setSearch}
+          searchValue={search}
+          onSelectUser={handleSelectUser}
+          onSearchChange={handleSearchChange}
           onStatusChange={setStatus}
           onRefresh={refresh}
         />
 
+        {hasFilter && (
+          <Box sx={{ mb: 2.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <GlobalTypography variant="body2" sx={{ color: '#64748B' }}>
+              Filtro activo:
+            </GlobalTypography>
+            <Chip
+              label={
+                selectedUser
+                  ? `Usuario: ${selectedUser.nombre}`
+                  : search
+                  ? `Búsqueda: "${search}"`
+                  : `Estatus: ${status}`
+              }
+              onDelete={handleClearFilter}
+              color="primary"
+              variant="outlined"
+              size="small"
+              sx={{ borderColor: '#E10098', color: '#E10098', fontWeight: 600 }}
+            />
+          </Box>
+        )}
+
         {isLoading ? (
           <UsersSkeleton />
-        ) : users.length === 0 ? (
+        ) : displayedUsers.length === 0 ? (
           <EmptyState
             title={
               hasFilter
@@ -187,7 +241,7 @@ const UsersContent: React.FC = memo(() => {
           <Box>
             <Box sx={{ display: { xs: 'none', md: 'block' } }}>
               <UsersTable
-                users={users}
+                users={displayedUsers}
                 page={page}
                 size={size}
                 totalElements={totalElements}
@@ -198,7 +252,7 @@ const UsersContent: React.FC = memo(() => {
 
             <Box sx={{ display: { xs: 'block', md: 'none' } }}>
               <Grid container spacing={2}>
-                {users.map((user) => (
+                {displayedUsers.map((user) => (
                   <Grid key={user.id} size={{ xs: 12, sm: 6 }}>
                     <UserCard user={user} />
                   </Grid>
