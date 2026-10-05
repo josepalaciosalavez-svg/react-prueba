@@ -16,7 +16,7 @@ import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
-import { GlobalTypography, StatusChip } from '@/components/common';
+import { GlobalTypography } from '@/components/common';
 import type { Delivery } from '@/types/delivery';
 
 interface DeliveryTableRowProps {
@@ -28,12 +28,12 @@ interface DeliveryTableRowProps {
 const DeliveryTableRow: React.FC<DeliveryTableRowProps> = memo(({ delivery, onEdit, onDelete }) => {
   const formattedDate = delivery.createdAt
     ? new Date(delivery.createdAt).toLocaleDateString('es-MX', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
     : 'N/A';
 
   return (
@@ -86,32 +86,9 @@ const DeliveryTableRow: React.FC<DeliveryTableRowProps> = memo(({ delivery, onEd
                 fontSize: '0.75rem',
               }}
             >
-              ID: {delivery.clienteId}
             </GlobalTypography>
           </Box>
         </Box>
-      </TableCell>
-
-      <TableCell sx={{ py: 2 }}>
-        <GlobalTypography
-          variant="caption"
-          sx={{
-            fontFamily: 'monospace',
-            fontWeight: 600,
-            backgroundColor: '#F8FAFC',
-            border: '1px solid #E2E8F0',
-            borderRadius: 1,
-            px: 0.8,
-            py: 0.3,
-            color: '#475569',
-          }}
-        >
-          {delivery.id}
-        </GlobalTypography>
-      </TableCell>
-
-      <TableCell align="center" sx={{ py: 2 }}>
-        <StatusChip status={delivery.status} />
       </TableCell>
 
       <TableCell sx={{ py: 2, whiteSpace: 'nowrap' }}>
@@ -202,12 +179,6 @@ export const DeliveriesTable: React.FC<DeliveriesTableProps> = memo(({
             </TableCell>
             <TableCell sx={{ fontWeight: 700, color: '#475569', fontSize: '0.8125rem', py: 1.75 }}>
               Cliente
-            </TableCell>
-            <TableCell sx={{ fontWeight: 700, color: '#475569', fontSize: '0.8125rem', py: 1.75 }}>
-              ID Entrega
-            </TableCell>
-            <TableCell align="center" sx={{ fontWeight: 700, color: '#475569', fontSize: '0.8125rem', py: 1.75 }}>
-              Estatus
             </TableCell>
             <TableCell sx={{ fontWeight: 700, color: '#475569', fontSize: '0.8125rem', py: 1.75 }}>
               Fecha de Registro

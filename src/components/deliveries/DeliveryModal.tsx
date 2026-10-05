@@ -17,6 +17,7 @@ import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import { GlobalModal, GlobalButton, GlobalTypography } from '@/components/common';
 import { deliveriesApi } from '@/api/deliveriesApi';
 import { notificationStore } from '@/stores';
+import { useAuth } from '@/hooks/useAuth';
 import type { Delivery, DeliveryRequest, DeliveryStatus, ClientOption } from '@/types/delivery';
 
 export interface DeliveryModalProps {
@@ -42,16 +43,21 @@ const DeliveryModalContent: React.FC<{
   onSuccess?: (savedDelivery: Delivery) => void;
 }> = memo(({ open, delivery, onClose, onSuccess }) => {
   const isEdit = Boolean(delivery);
+  const { user, hasRole } = useAuth();
+  const isCliente = user?.role === 'CLIENTE' || hasRole('CLIENTE');
 
   const [formData, setFormData] = useState<DeliveryRequest>(() => {
     if (delivery) {
       return {
-        clienteId: delivery.clienteId || '',
+        clienteId: delivery.clienteId || (isCliente ? (user?.clienteId || user?.id || '') : ''),
         direccionEnvio: delivery.direccionEnvio || '',
         status: delivery.status || 'ACTIVO',
       };
     }
-    return INITIAL_FORM;
+    return {
+      ...INITIAL_FORM,
+      clienteId: isCliente ? (user?.clienteId || user?.id || '') : '',
+    };
   });
 
   const [selectedClient, setSelectedClient] = useState<ClientOption | null>(() => {
@@ -100,8 +106,9 @@ const DeliveryModalContent: React.FC<{
 
   const validate = useCallback((): boolean => {
     const newErrors: Record<string, string> = {};
+    const effectiveClienteId = (formData.clienteId || (isCliente ? (user?.clienteId || user?.id || '') : '')).trim();
 
-    if (!formData.clienteId.trim()) {
+    if (!effectiveClienteId) {
       newErrors.clienteId = 'El ID de cliente es obligatorio';
     }
 
@@ -117,7 +124,7 @@ const DeliveryModalContent: React.FC<{
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData]);
+  }, [formData, isCliente, user]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -126,8 +133,9 @@ const DeliveryModalContent: React.FC<{
 
       setIsSubmitting(true);
       try {
+        const effectiveClienteId = (formData.clienteId || (isCliente ? (user?.clienteId || user?.id || '') : '')).trim();
         const payload: DeliveryRequest = {
-          clienteId: formData.clienteId.trim(),
+          clienteId: effectiveClienteId,
           direccionEnvio: formData.direccionEnvio.trim(),
           status: formData.status,
         };
@@ -149,7 +157,7 @@ const DeliveryModalContent: React.FC<{
         setIsSubmitting(false);
       }
     },
-    [validate, formData, isEdit, delivery, onSuccess, onClose]
+    [validate, formData, isCliente, user, isEdit, delivery, onSuccess, onClose]
   );
 
   return (
@@ -207,86 +215,88 @@ const DeliveryModalContent: React.FC<{
     >
       <Box component="form" id="delivery-form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
         <Grid container spacing={2.5}>
-          <Grid size={{ xs: 12 }}>
-            <Autocomplete<ClientOption, false, false, true>
-              freeSolo
-              options={clientOptions}
-              loading={loadingClients}
-              value={selectedClient}
-              inputValue={clientSearchInput}
-              getOptionLabel={(option) => {
-                if (typeof option === 'string') return option;
-                const fullName = `${option.nombre || ''} ${option.apellidoPaterno || ''}`.trim();
-                return fullName ? `${fullName} (${option.id})` : option.id;
-              }}
-              onInputChange={(_event, newInputValue, reason) => {
-                setClientSearchInput(newInputValue);
-                if (reason === 'input') {
-                  handleChange('clienteId', newInputValue);
-                  handleSearchClients(newInputValue);
-                }
-              }}
-              onChange={(_event, newValue) => {
-                if (typeof newValue === 'string') {
-                  setSelectedClient({ id: newValue, nombre: newValue });
-                  handleChange('clienteId', newValue);
-                } else if (newValue) {
-                  setSelectedClient(newValue);
-                  handleChange('clienteId', newValue.id);
-                } else {
-                  setSelectedClient(null);
-                  handleChange('clienteId', '');
-                }
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  required
-                  label="ID o Nombre del Cliente"
-                  placeholder="Busca por nombre o escribe el ID del cliente"
-                  size="small"
-                  error={Boolean(errors.clienteId)}
-                  helperText={errors.clienteId || 'Selecciona un cliente o ingresa el identificador directamente'}
-                  disabled={isSubmitting}
-                  slotProps={{
-                    ...params.slotProps,
-                    input: {
-                      ...params.slotProps.input,
-                      startAdornment: (
-                        <>
-                          <InputAdornment position="start">
-                            <PersonOutlinedIcon sx={{ fontSize: 20, color: '#94A3B8' }} />
-                          </InputAdornment>
-                          {params.slotProps.input.startAdornment}
-                        </>
-                      ),
-                      endAdornment: (
-                        <>
-                          {loadingClients ? <CircularProgress size={18} sx={{ color: '#E10098', mr: 1 }} /> : null}
-                          {params.slotProps.input.endAdornment}
-                        </>
-                      ),
-                    },
-                  }}
-                />
-              )}
-              renderOption={(props, option) => {
-                const fullName = `${option.nombre || ''} ${option.apellidoPaterno || ''}`.trim();
-                return (
-                  <Box component="li" {...props} key={option.id} sx={{ py: 1, px: 2 }}>
-                    <Box sx={{ minWidth: 0, width: '100%' }}>
-                      <GlobalTypography variant="body2" sx={{ fontWeight: 600, color: '#0F172A' }}>
-                        {fullName || 'Cliente'}
-                      </GlobalTypography>
-                      <GlobalTypography variant="caption" sx={{ color: '#64748B', display: 'block' }}>
-                        ID: {option.id} {option.email ? `· ${option.email}` : ''}
-                      </GlobalTypography>
+          {!isCliente && (
+            <Grid size={{ xs: 12 }}>
+              <Autocomplete<ClientOption, false, false, true>
+                freeSolo
+                options={clientOptions}
+                loading={loadingClients}
+                value={selectedClient}
+                inputValue={clientSearchInput}
+                getOptionLabel={(option) => {
+                  if (typeof option === 'string') return option;
+                  const fullName = `${option.nombre || ''} ${option.apellidoPaterno || ''}`.trim();
+                  return fullName ? `${fullName} (${option.id})` : option.id;
+                }}
+                onInputChange={(_event, newInputValue, reason) => {
+                  setClientSearchInput(newInputValue);
+                  if (reason === 'input') {
+                    handleChange('clienteId', newInputValue);
+                    handleSearchClients(newInputValue);
+                  }
+                }}
+                onChange={(_event, newValue) => {
+                  if (typeof newValue === 'string') {
+                    setSelectedClient({ id: newValue, nombre: newValue });
+                    handleChange('clienteId', newValue);
+                  } else if (newValue) {
+                    setSelectedClient(newValue);
+                    handleChange('clienteId', newValue.id);
+                  } else {
+                    setSelectedClient(null);
+                    handleChange('clienteId', '');
+                  }
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    required
+                    label="ID o Nombre del Cliente"
+                    placeholder="Busca por nombre o escribe el ID del cliente"
+                    size="small"
+                    error={Boolean(errors.clienteId)}
+                    helperText={errors.clienteId || 'Selecciona un cliente o ingresa el identificador directamente'}
+                    disabled={isSubmitting}
+                    slotProps={{
+                      ...params.slotProps,
+                      input: {
+                        ...params.slotProps.input,
+                        startAdornment: (
+                          <>
+                            <InputAdornment position="start">
+                              <PersonOutlinedIcon sx={{ fontSize: 20, color: '#94A3B8' }} />
+                            </InputAdornment>
+                            {params.slotProps.input.startAdornment}
+                          </>
+                        ),
+                        endAdornment: (
+                          <>
+                            {loadingClients ? <CircularProgress size={18} sx={{ color: '#E10098', mr: 1 }} /> : null}
+                            {params.slotProps.input.endAdornment}
+                          </>
+                        ),
+                      },
+                    }}
+                  />
+                )}
+                renderOption={(props, option) => {
+                  const fullName = `${option.nombre || ''} ${option.apellidoPaterno || ''}`.trim();
+                  return (
+                    <Box component="li" {...props} key={option.id} sx={{ py: 1, px: 2 }}>
+                      <Box sx={{ minWidth: 0, width: '100%' }}>
+                        <GlobalTypography variant="body2" sx={{ fontWeight: 600, color: '#0F172A' }}>
+                          {fullName || 'Cliente'}
+                        </GlobalTypography>
+                        <GlobalTypography variant="caption" sx={{ color: '#64748B', display: 'block' }}>
+                          ID: {option.id} {option.email ? `· ${option.email}` : ''}
+                        </GlobalTypography>
+                      </Box>
                     </Box>
-                  </Box>
-                );
-              }}
-            />
-          </Grid>
+                  );
+                }}
+              />
+            </Grid>
+          )}
 
           <Grid size={{ xs: 12 }}>
             <TextField

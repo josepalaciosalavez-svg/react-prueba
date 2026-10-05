@@ -2,9 +2,10 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'ADMIN' | 'OPERATOR' | 'SUPERVISOR' | string;
+  role: 'ADMIN' | 'OPERATOR' | 'SUPERVISOR' | 'CLIENTE' | string;
   avatar?: string;
   roles?: string[];
+  clienteId?: string;
 }
 
 export interface LoginCredentials {
@@ -32,6 +33,7 @@ export interface ApiAuthResponse {
       email: string;
       roles: string[];
       status?: string;
+      clienteId?: string;
       createdAt?: string;
     };
   };

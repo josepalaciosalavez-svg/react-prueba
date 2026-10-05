@@ -3,14 +3,14 @@ import axiosInstance from '@/utils/axiosInstance';
 import { tokenStorage } from '@/utils/tokenStorage';
 import type { ApiAuthResponse, AuthResponse, LoginCredentials, User } from '@/types/auth';
 
-const ROLE_PRIORITY = ['ADMIN', 'SUPERVISOR', 'OPERATOR', 'USER'] as const;
+const ROLE_PRIORITY = ['ADMIN', 'SUPERVISOR', 'OPERATOR', 'USER', 'CLIENTE'] as const;
 
 function resolvePrimaryRole(roles: string[]): string {
   const normalized = new Set(roles.map((r) => r.replace(/^ROLE_/, '').toUpperCase()));
   return (
     ROLE_PRIORITY.find((priority) => normalized.has(priority)) ||
     roles[0]?.replace(/^ROLE_/, '').toUpperCase() ||
-    'USER'
+    'CLIENTE'
   );
 }
 
@@ -39,6 +39,7 @@ export const authApi = {
         email: usuario.email,
         role: primaryRole,
         roles,
+        clienteId: usuario.clienteId,
         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(usuario.nombre)}&background=E10098&color=fff`,
       };
 
