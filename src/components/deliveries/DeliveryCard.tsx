@@ -1,17 +1,25 @@
 import React, { memo } from 'react';
-import { Box, Card, CardContent, Divider } from '@mui/material';
+import { Box, Card, CardContent, Divider, IconButton, Tooltip } from '@mui/material';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 import FingerprintOutlinedIcon from '@mui/icons-material/FingerprintOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import { GlobalTypography, StatusChip } from '@/components/common';
 import type { Delivery } from '@/types/delivery';
 
 interface DeliveryCardProps {
   delivery: Delivery;
+  onEditDelivery?: (delivery: Delivery) => void;
+  onDeleteDelivery?: (delivery: Delivery) => void;
 }
 
-export const DeliveryCard: React.FC<DeliveryCardProps> = memo(({ delivery }) => {
+export const DeliveryCard: React.FC<DeliveryCardProps> = memo(({
+  delivery,
+  onEditDelivery,
+  onDeleteDelivery,
+}) => {
   const formattedDate = delivery.createdAt
     ? new Date(delivery.createdAt).toLocaleDateString('es-MX', {
         day: '2-digit',
@@ -58,8 +66,42 @@ export const DeliveryCard: React.FC<DeliveryCardProps> = memo(({ delivery }) => 
               </GlobalTypography>
             </Box>
           </Box>
-          <Box sx={{ flexShrink: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
             <StatusChip status={delivery.status} size="small" />
+            <Tooltip title="Editar lugar de entrega">
+              <IconButton
+                size="small"
+                onClick={() => onEditDelivery?.(delivery)}
+                aria-label={`Editar entrega ${delivery.id}`}
+                sx={{
+                  color: '#64748B',
+                  p: 0.5,
+                  '&:hover': {
+                    color: '#E10098',
+                    backgroundColor: '#FDF2F8',
+                  },
+                }}
+              >
+                <EditOutlinedIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Eliminar lugar de entrega">
+              <IconButton
+                size="small"
+                onClick={() => onDeleteDelivery?.(delivery)}
+                aria-label={`Eliminar entrega ${delivery.id}`}
+                sx={{
+                  color: '#64748B',
+                  p: 0.5,
+                  '&:hover': {
+                    color: '#DC2626',
+                    backgroundColor: '#FEF2F2',
+                  },
+                }}
+              >
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Tooltip>
           </Box>
         </Box>
 

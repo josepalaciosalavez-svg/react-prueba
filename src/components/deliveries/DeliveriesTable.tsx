@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import {
   Box,
+  IconButton,
   Paper,
   Table,
   TableBody,
@@ -9,17 +10,22 @@ import {
   TableHead,
   TablePagination,
   TableRow,
+  Tooltip,
 } from '@mui/material';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import { GlobalTypography, StatusChip } from '@/components/common';
 import type { Delivery } from '@/types/delivery';
 
 interface DeliveryTableRowProps {
   delivery: Delivery;
+  onEdit?: (delivery: Delivery) => void;
+  onDelete?: (delivery: Delivery) => void;
 }
 
-const DeliveryTableRow: React.FC<DeliveryTableRowProps> = memo(({ delivery }) => {
+const DeliveryTableRow: React.FC<DeliveryTableRowProps> = memo(({ delivery, onEdit, onDelete }) => {
   const formattedDate = delivery.createdAt
     ? new Date(delivery.createdAt).toLocaleDateString('es-MX', {
         day: '2-digit',
@@ -113,6 +119,43 @@ const DeliveryTableRow: React.FC<DeliveryTableRowProps> = memo(({ delivery }) =>
           {formattedDate}
         </GlobalTypography>
       </TableCell>
+
+      <TableCell align="right" sx={{ py: 1.5, whiteSpace: 'nowrap' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 0.5 }}>
+          <Tooltip title="Editar lugar de entrega">
+            <IconButton
+              size="small"
+              onClick={() => onEdit?.(delivery)}
+              aria-label={`Editar entrega ${delivery.id}`}
+              sx={{
+                color: '#64748B',
+                '&:hover': {
+                  color: '#E10098',
+                  backgroundColor: '#FDF2F8',
+                },
+              }}
+            >
+              <EditOutlinedIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Eliminar lugar de entrega">
+            <IconButton
+              size="small"
+              onClick={() => onDelete?.(delivery)}
+              aria-label={`Eliminar entrega ${delivery.id}`}
+              sx={{
+                color: '#64748B',
+                '&:hover': {
+                  color: '#DC2626',
+                  backgroundColor: '#FEF2F2',
+                },
+              }}
+            >
+              <DeleteOutlineOutlinedIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      </TableCell>
     </TableRow>
   );
 });
@@ -126,6 +169,8 @@ interface DeliveriesTableProps {
   totalElements: number;
   onPageChange: (newPage: number) => void;
   onRowsPerPageChange: (newSize: number) => void;
+  onEditDelivery?: (delivery: Delivery) => void;
+  onDeleteDelivery?: (delivery: Delivery) => void;
 }
 
 export const DeliveriesTable: React.FC<DeliveriesTableProps> = memo(({
@@ -135,6 +180,8 @@ export const DeliveriesTable: React.FC<DeliveriesTableProps> = memo(({
   totalElements,
   onPageChange,
   onRowsPerPageChange,
+  onEditDelivery,
+  onDeleteDelivery,
 }) => {
   return (
     <TableContainer
@@ -165,11 +212,19 @@ export const DeliveriesTable: React.FC<DeliveriesTableProps> = memo(({
             <TableCell sx={{ fontWeight: 700, color: '#475569', fontSize: '0.8125rem', py: 1.75 }}>
               Fecha de Registro
             </TableCell>
+            <TableCell align="right" sx={{ fontWeight: 700, color: '#475569', fontSize: '0.8125rem', py: 1.75 }}>
+              Acciones
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {deliveries.map((delivery) => (
-            <DeliveryTableRow key={delivery.id} delivery={delivery} />
+            <DeliveryTableRow
+              key={delivery.id}
+              delivery={delivery}
+              onEdit={onEditDelivery}
+              onDelete={onDeleteDelivery}
+            />
           ))}
         </TableBody>
       </Table>

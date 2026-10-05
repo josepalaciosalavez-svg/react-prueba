@@ -1,18 +1,24 @@
 import React, { memo, useState, useCallback, useMemo } from 'react';
 import { Box, Chip, Container, Grid, Paper, TablePagination } from '@mui/material';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import AddLocationAltOutlinedIcon from '@mui/icons-material/AddLocationAltOutlined';
 import {
   Navbar,
   EmptyState,
   GlobalTypography,
   GlobalSkeleton,
+  GlobalButton,
 } from '@/components/common';
 import {
   DeliveriesTable,
   DeliveryCard,
   DeliveriesFilterBar,
+  DeliveryModal,
+  DeleteDeliveryDialog,
 } from '@/components/deliveries';
 import { useDeliveries } from '@/hooks/useDeliveries';
+import { deliveriesApi } from '@/api/deliveriesApi';
+import { notificationStore } from '@/stores';
 import type { Delivery } from '@/types/delivery';
 
 export const DeliveriesListPage: React.FC = memo(() => {
@@ -32,6 +38,54 @@ export const DeliveriesListPage: React.FC = memo(() => {
   } = useDeliveries(10);
 
   const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(null);
+  const [selectedDeliveryForModal, setSelectedDeliveryForModal] = useState<Delivery | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+  const [deliveryToDelete, setDeliveryToDelete] = useState<Delivery | null>(null);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+
+  const handleOpenCreate = useCallback(() => {
+    setSelectedDeliveryForModal(null);
+    setIsModalOpen(true);
+  }, []);
+
+  const handleEditDelivery = useCallback((delivery: Delivery) => {
+    setSelectedDeliveryForModal(delivery);
+    setIsModalOpen(true);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setIsModalOpen(false);
+    setSelectedDeliveryForModal(null);
+  }, []);
+
+  const handleModalSuccess = useCallback(() => {
+    refresh();
+  }, [refresh]);
+
+  const handleOpenDelete = useCallback((delivery: Delivery) => {
+    setDeliveryToDelete(delivery);
+  }, []);
+
+  const handleCloseDelete = useCallback(() => {
+    if (!isDeleting) {
+      setDeliveryToDelete(null);
+    }
+  }, [isDeleting]);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!deliveryToDelete) return;
+    setIsDeleting(true);
+    try {
+      await deliveriesApi.deleteDelivery(deliveryToDelete.id);
+      notificationStore.getState().showSuccess('Lugar de entrega eliminado exitosamente');
+      setDeliveryToDelete(null);
+      refresh();
+    } catch {
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [deliveryToDelete, refresh]);
 
   const handleSelectDelivery = useCallback((delivery: Delivery | null) => {
     setSelectedDelivery(delivery);
@@ -128,6 +182,28 @@ export const DeliveriesListPage: React.FC = memo(() => {
               </GlobalTypography>
             </Box>
           </Box>
+
+          <GlobalButton
+            variant="contained"
+            startIcon={<AddLocationAltOutlinedIcon sx={{ fontSize: 20 }} />}
+            onClick={handleOpenCreate}
+            sx={{
+              backgroundColor: '#E10098',
+              color: '#FFFFFF',
+              fontWeight: 700,
+              height: 40,
+              px: 2.5,
+              borderRadius: 2,
+              boxShadow: '0 2px 8px rgba(225, 0, 152, 0.25)',
+              whiteSpace: 'nowrap',
+              '&:hover': {
+                backgroundColor: '#C50084',
+                boxShadow: '0 4px 12px rgba(225, 0, 152, 0.35)',
+              },
+            }}
+          >
+            Nueva Entrega
+          </GlobalButton>
         </Box>
 
         <DeliveriesFilterBar
@@ -187,6 +263,8 @@ export const DeliveriesListPage: React.FC = memo(() => {
                 totalElements={totalElements}
                 onPageChange={setPage}
                 onRowsPerPageChange={setSize}
+                onEditDelivery={handleEditDelivery}
+                onDeleteDelivery={handleOpenDelete}
               />
             </Box>
 
@@ -194,7 +272,11 @@ export const DeliveriesListPage: React.FC = memo(() => {
               <Grid container spacing={2}>
                 {displayedDeliveries.map((delivery) => (
                   <Grid key={delivery.id} size={{ xs: 12, sm: 6 }}>
-                    <DeliveryCard delivery={delivery} />
+                    <DeliveryCard
+                      delivery={delivery}
+                      onEditDelivery={handleEditDelivery}
+                      onDeleteDelivery={handleOpenDelete}
+                    />
                   </Grid>
                 ))}
               </Grid>
@@ -223,6 +305,21 @@ export const DeliveriesListPage: React.FC = memo(() => {
             </Box>
           </Box>
         )}
+
+        <DeliveryModal
+          open={isModalOpen}
+          delivery={selectedDeliveryForModal}
+          onClose={handleCloseModal}
+          onSuccess={handleModalSuccess}
+        />
+
+        <DeleteDeliveryDialog
+          open={Boolean(deliveryToDelete)}
+          delivery={deliveryToDelete}
+          isDeleting={isDeleting}
+          onConfirm={handleConfirmDelete}
+          onClose={handleCloseDelete}
+        />
       </Container>
     </Box>
   );

@@ -10,6 +10,23 @@ export interface Delivery {
   updatedAt: string;
 }
 
+export interface DeliveryRequest {
+  clienteId: string;
+  direccionEnvio: string;
+  status: DeliveryStatus;
+}
+
+export type CreateDeliveryDto = DeliveryRequest;
+export type UpdateDeliveryDto = DeliveryRequest;
+
+export interface ClientOption {
+  id: string;
+  nombre: string;
+  apellidoPaterno?: string;
+  apellidoMaterno?: string;
+  email?: string;
+}
+
 export interface DeliveryQueryParams {
   page?: number;
   size?: number;

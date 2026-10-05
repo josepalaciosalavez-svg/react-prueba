@@ -1,7 +1,14 @@
 import axios from 'axios';
 import axiosInstance from '@/utils/axiosInstance';
 import { notificationStore } from '@/stores/notificationStore';
-import type { Delivery, DeliveryQueryParams, PagedDeliveriesResponse } from '@/types/delivery';
+import type {
+  Delivery,
+  DeliveryQueryParams,
+  PagedDeliveriesResponse,
+  CreateDeliveryDto,
+  UpdateDeliveryDto,
+  ClientOption,
+} from '@/types/delivery';
 
 function handleDeliveriesApiError(error: unknown, fallbackMessage: string): never {
   if (axios.isCancel(error) || (error instanceof DOMException && error.name === 'AbortError')) {
@@ -66,12 +73,53 @@ export const deliveriesApi = {
     }
   },
 
+  async createDelivery(payload: CreateDeliveryDto): Promise<Delivery> {
+    try {
+      const response = await axiosInstance.post('/entregas', payload);
+      return response.data?.data ?? response.data;
+    } catch (error) {
+      handleDeliveriesApiError(error, 'Error al registrar la nueva entrega.');
+    }
+  },
+
+  async updateDelivery(id: string, payload: UpdateDeliveryDto): Promise<Delivery> {
+    try {
+      const response = await axiosInstance.put(`/entregas/${id}`, payload);
+      return response.data?.data ?? response.data;
+    } catch (error) {
+      handleDeliveriesApiError(error, 'Error al actualizar la entrega.');
+    }
+  },
+
+  async deleteDelivery(id: string): Promise<void> {
+    try {
+      await axiosInstance.delete(`/entregas/${id}`);
+    } catch (error) {
+      handleDeliveriesApiError(error, 'Error al eliminar el lugar de entrega.');
+    }
+  },
+
   async getTypeaheadSuggestions(query: string, signal?: AbortSignal): Promise<Delivery[]> {
     const term = query.trim();
     if (!term) return [];
     try {
       const response = await deliveriesApi.getDeliveries({ search: term, size: 8 }, signal);
       return response.content;
+    } catch {
+      return [];
+    }
+  },
+
+  async getClientSuggestions(query: string, signal?: AbortSignal): Promise<ClientOption[]> {
+    const term = query.trim();
+    if (!term) return [];
+    try {
+      const response = await axiosInstance.get('/clientes', {
+        params: { search: term, size: 8 },
+        signal,
+      });
+      const data = response.data?.data ?? response.data;
+      return Array.isArray(data?.content) ? data.content : [];
     } catch {
       return [];
     }
