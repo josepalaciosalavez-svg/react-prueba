@@ -86,6 +86,20 @@ const STATUS_CONFIG: Record<string, StatusConfig> = {
     bg: '#FEE2E2',
     textColor: '#991B1B',
   },
+  ACTIVO: {
+    label: 'Activo',
+    color: 'success',
+    icon: <CheckCircleOutlinedIcon sx={{ fontSize: 16 }} />,
+    bg: '#DCFCE7',
+    textColor: '#15803D',
+  },
+  INACTIVO: {
+    label: 'Inactivo',
+    color: 'default',
+    icon: <CancelOutlinedIcon sx={{ fontSize: 16 }} />,
+    bg: '#F1F5F9',
+    textColor: '#64748B',
+  },
 };
 
 interface StatusChipProps {
