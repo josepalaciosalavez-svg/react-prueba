@@ -2,7 +2,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'ADMIN' | 'OPERATOR' | 'SUPERVISOR' | 'CLIENTE' | string;
+  role: 'ADMIN' | 'USER' | 'OPERATOR' | 'SUPERVISOR' | 'CLIENTE' | string;
   avatar?: string;
   roles?: string[];
   clienteId?: string;

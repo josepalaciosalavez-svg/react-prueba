@@ -56,11 +56,9 @@ export const LoginPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       await login({ email: email.trim(), password });
-      // Redirigir a la ruta a la que intentaba entrar o a /pedidos
       const destination = (location.state as { from?: { pathname: string } })?.from?.pathname || '/pedidos';
       navigate(destination, { replace: true });
     } catch {
-      // Error manejado en AuthContext
     } finally {
       setIsSubmitting(false);
     }
@@ -93,7 +91,6 @@ export const LoginPage: React.FC = () => {
           }}
         >
           <CardContent sx={{ p: 3 }}>
-            {/* Logo y Encabezado */}
             <Box sx={{ textAlign: 'center', mb: 3 }}>
               <Box
                 sx={{
@@ -127,16 +124,15 @@ export const LoginPage: React.FC = () => {
               </Alert>
             )}
 
-            {/* Formulario */}
             <Box component="form" onSubmit={handleSubmit} noValidate>
               <Box sx={{ mb: 2 }}>
                 <GlobalTypography variant="caption" sx={{ fontWeight: 600, color: '#334155', mb: 0.5, display: 'block' }}>
-                  Correo institucional
+                  Correo electrónico
                 </GlobalTypography>
                 <TextField
                   fullWidth
                   size="small"
-                  placeholder="ejemplo@liverpool.com.mx"
+                  placeholder="ejemplo@correo.com"
                   type="email"
                   value={email}
                   onChange={(e) => {
@@ -200,23 +196,11 @@ export const LoginPage: React.FC = () => {
                 Ingresar al Portal
               </GlobalButton>
             </Box>
-
-            {/* Quick Demo Helper */}
-            <Box
-              sx={{
-                mt: 3,
-                pt: 2,
-                borderTop: '1px dashed #E2E8F0',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-
-            </Box>
           </CardContent>
         </Card>
       </Container>
     </Box>
   );
 };
+
+export default LoginPage;
