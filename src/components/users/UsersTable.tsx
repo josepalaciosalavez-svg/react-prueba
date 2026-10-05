@@ -27,12 +27,12 @@ interface UserTableRowProps {
 const UserTableRow: React.FC<UserTableRowProps> = memo(({ user, onEdit }) => {
   const formattedDate = user.createdAt
     ? new Date(user.createdAt).toLocaleDateString('es-MX', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
     : 'N/A';
 
   const initial = (user.nombre || user.email || 'U').charAt(0).toUpperCase();
@@ -69,24 +69,6 @@ const UserTableRow: React.FC<UserTableRowProps> = memo(({ user, onEdit }) => {
             </GlobalTypography>
           </Box>
         </Box>
-      </TableCell>
-
-      <TableCell sx={{ py: 2 }}>
-        <GlobalTypography
-          variant="caption"
-          sx={{
-            fontFamily: 'monospace',
-            fontWeight: 600,
-            backgroundColor: '#F8FAFC',
-            border: '1px solid #E2E8F0',
-            borderRadius: 1,
-            px: 0.8,
-            py: 0.3,
-            color: '#475569',
-          }}
-        >
-          {user.id}
-        </GlobalTypography>
       </TableCell>
 
       <TableCell sx={{ py: 2 }}>
@@ -190,9 +172,6 @@ export const UsersTable: React.FC<UsersTableProps> = memo(({
           <TableRow>
             <TableCell sx={{ fontWeight: 700, color: '#475569', fontSize: '0.8125rem', py: 1.75 }}>
               Usuario
-            </TableCell>
-            <TableCell sx={{ fontWeight: 700, color: '#475569', fontSize: '0.8125rem', py: 1.75 }}>
-              ID de Usuario
             </TableCell>
             <TableCell sx={{ fontWeight: 700, color: '#475569', fontSize: '0.8125rem', py: 1.75 }}>
               Roles Asignados

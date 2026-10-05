@@ -152,9 +152,9 @@ export const UserMenu: React.FC = memo(() => {
               height: 20,
               fontSize: '0.65rem',
               fontWeight: 700,
-              backgroundColor: isAdmin ? '#FDF2F8' : '#F1F5F9',
-              color: isAdmin ? '#E10098' : '#475569',
-              border: isAdmin ? '1px solid #FCE7F3' : 'none',
+              backgroundColor: isAdmin ? '#FDF2F8' : user.role === 'CLIENTE' ? '#EFF6FF' : '#F1F5F9',
+              color: isAdmin ? '#E10098' : user.role === 'CLIENTE' ? '#2563EB' : '#475569',
+              border: isAdmin ? '1px solid #FCE7F3' : user.role === 'CLIENTE' ? '1px solid #DBEAFE' : 'none',
             }}
           />
         </Box>

@@ -90,13 +90,6 @@ export const OrderCard: React.FC<OrderCardProps> = React.memo(({ order, onSelect
               {order.direccionEnvio || 'Dirección de entrega pendiente'}
             </GlobalTypography>
           </Box>
-
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mt: 0.2 }}>
-            <LocalShippingOutlinedIcon sx={{ fontSize: 16, color: '#64748B' }} />
-            <GlobalTypography variant="caption" sx={{ color: '#64748B', fontFamily: 'monospace', fontWeight: 600 }}>
-              ID: {order.entregaId}
-            </GlobalTypography>
-          </Box>
         </Box>
 
         <Divider sx={{ my: 1.5, borderColor: '#F1F5F9' }} />

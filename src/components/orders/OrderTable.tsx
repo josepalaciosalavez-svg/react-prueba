@@ -28,12 +28,12 @@ interface OrderTableRowProps {
 const OrderTableRow: React.FC<OrderTableRowProps> = React.memo(({ order, onSelectOrder, onEditOrder, onDeleteOrder }) => {
   const formattedDate = order.createdAt
     ? new Date(order.createdAt).toLocaleDateString('es-MX', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
     : 'N/A';
 
   const precio = Number(order.precio ?? 0);
@@ -115,24 +115,6 @@ const OrderTableRow: React.FC<OrderTableRowProps> = React.memo(({ order, onSelec
 
       <TableCell align="center" sx={{ py: 2 }}>
         <StatusChip status={order.statusPedido} size="small" />
-      </TableCell>
-
-      <TableCell sx={{ whiteSpace: 'nowrap', py: 2 }}>
-        <GlobalTypography
-          variant="caption"
-          sx={{
-            fontFamily: 'monospace',
-            fontWeight: 600,
-            backgroundColor: '#F8FAFC',
-            border: '1px solid #E2E8F0',
-            borderRadius: 1,
-            px: 0.8,
-            py: 0.3,
-            color: '#475569',
-          }}
-        >
-          {order.entregaId}
-        </GlobalTypography>
       </TableCell>
 
       <TableCell sx={{ py: 2, minWidth: 160 }}>
@@ -243,9 +225,6 @@ export const OrderTable: React.FC<OrderTableProps> = React.memo(({ orders, onSel
             </TableCell>
             <TableCell align="center" sx={{ fontWeight: 700, color: '#475569', fontSize: '0.8125rem', whiteSpace: 'nowrap', py: 1.5 }}>
               Estatus Pedido
-            </TableCell>
-            <TableCell sx={{ fontWeight: 700, color: '#475569', fontSize: '0.8125rem', whiteSpace: 'nowrap', py: 1.5 }}>
-              ID Entrega
             </TableCell>
             <TableCell sx={{ fontWeight: 700, color: '#475569', fontSize: '0.8125rem', whiteSpace: 'nowrap', py: 1.5 }}>
               Cliente
