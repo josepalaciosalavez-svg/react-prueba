@@ -1,0 +1,200 @@
+import React, { memo } from 'react';
+import {
+  Box,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+} from '@mui/material';
+import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
+import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
+import { GlobalTypography, StatusChip } from '@/components/common';
+import type { Delivery } from '@/types/delivery';
+
+interface DeliveryTableRowProps {
+  delivery: Delivery;
+}
+
+const DeliveryTableRow: React.FC<DeliveryTableRowProps> = memo(({ delivery }) => {
+  const formattedDate = delivery.createdAt
+    ? new Date(delivery.createdAt).toLocaleDateString('es-MX', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : 'N/A';
+
+  return (
+    <TableRow
+      hover
+      sx={{
+        transition: 'background-color 0.15s ease',
+        '&:last-child td, &:last-child th': { border: 0 },
+      }}
+    >
+      <TableCell component="th" scope="row" sx={{ py: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.25 }}>
+          <Box
+            sx={{
+              width: 34,
+              height: 34,
+              borderRadius: 2,
+              backgroundColor: '#FDF2F8',
+              color: '#E10098',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              mt: 0.25,
+            }}
+          >
+            <PlaceOutlinedIcon sx={{ fontSize: 20 }} />
+          </Box>
+          <Box>
+            <GlobalTypography variant="body2" sx={{ fontWeight: 700, color: '#0F172A', lineHeight: 1.3 }}>
+              {delivery.direccionEnvio}
+            </GlobalTypography>
+          </Box>
+        </Box>
+      </TableCell>
+
+      <TableCell sx={{ py: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <PersonOutlinedIcon sx={{ fontSize: 18, color: '#64748B' }} />
+          <Box>
+            <GlobalTypography variant="body2" sx={{ fontWeight: 600, color: '#1E293B' }}>
+              {delivery.nombreCliente || 'Cliente no asignado'}
+            </GlobalTypography>
+            <GlobalTypography
+              variant="caption"
+              sx={{
+                fontFamily: 'monospace',
+                color: '#64748B',
+                display: 'block',
+                fontSize: '0.75rem',
+              }}
+            >
+              ID: {delivery.clienteId}
+            </GlobalTypography>
+          </Box>
+        </Box>
+      </TableCell>
+
+      <TableCell sx={{ py: 2 }}>
+        <GlobalTypography
+          variant="caption"
+          sx={{
+            fontFamily: 'monospace',
+            fontWeight: 600,
+            backgroundColor: '#F8FAFC',
+            border: '1px solid #E2E8F0',
+            borderRadius: 1,
+            px: 0.8,
+            py: 0.3,
+            color: '#475569',
+          }}
+        >
+          {delivery.id}
+        </GlobalTypography>
+      </TableCell>
+
+      <TableCell align="center" sx={{ py: 2 }}>
+        <StatusChip status={delivery.status} />
+      </TableCell>
+
+      <TableCell sx={{ py: 2, whiteSpace: 'nowrap' }}>
+        <GlobalTypography variant="body2" sx={{ color: '#475569', fontSize: '0.8125rem' }}>
+          {formattedDate}
+        </GlobalTypography>
+      </TableCell>
+    </TableRow>
+  );
+});
+
+DeliveryTableRow.displayName = 'DeliveryTableRow';
+
+interface DeliveriesTableProps {
+  deliveries: Delivery[];
+  page: number;
+  size: number;
+  totalElements: number;
+  onPageChange: (newPage: number) => void;
+  onRowsPerPageChange: (newSize: number) => void;
+}
+
+export const DeliveriesTable: React.FC<DeliveriesTableProps> = memo(({
+  deliveries,
+  page,
+  size,
+  totalElements,
+  onPageChange,
+  onRowsPerPageChange,
+}) => {
+  return (
+    <TableContainer
+      component={Paper}
+      elevation={0}
+      sx={{
+        border: '1px solid #E2E8F0',
+        borderRadius: 2.5,
+        overflowX: 'auto',
+        backgroundColor: '#FFFFFF',
+      }}
+    >
+      <Table sx={{ minWidth: 750 }} aria-label="tabla de lugares de entrega">
+        <TableHead sx={{ backgroundColor: '#F8FAFC' }}>
+          <TableRow>
+            <TableCell sx={{ fontWeight: 700, color: '#475569', fontSize: '0.8125rem', py: 1.75 }}>
+              Dirección de Entrega
+            </TableCell>
+            <TableCell sx={{ fontWeight: 700, color: '#475569', fontSize: '0.8125rem', py: 1.75 }}>
+              Cliente
+            </TableCell>
+            <TableCell sx={{ fontWeight: 700, color: '#475569', fontSize: '0.8125rem', py: 1.75 }}>
+              ID Entrega
+            </TableCell>
+            <TableCell align="center" sx={{ fontWeight: 700, color: '#475569', fontSize: '0.8125rem', py: 1.75 }}>
+              Estatus
+            </TableCell>
+            <TableCell sx={{ fontWeight: 700, color: '#475569', fontSize: '0.8125rem', py: 1.75 }}>
+              Fecha de Registro
+            </TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {deliveries.map((delivery) => (
+            <DeliveryTableRow key={delivery.id} delivery={delivery} />
+          ))}
+        </TableBody>
+      </Table>
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25, 50]}
+        component="div"
+        count={totalElements}
+        rowsPerPage={size}
+        page={page}
+        onPageChange={(_e, newPage) => onPageChange(newPage)}
+        onRowsPerPageChange={(e) => onRowsPerPageChange(parseInt(e.target.value, 10))}
+        labelRowsPerPage="Filas por página:"
+        labelDisplayedRows={({ from, to, count }) => `${from}–${to} de ${count !== -1 ? count : `más de ${to}`}`}
+        sx={{
+          borderTop: '1px solid #E2E8F0',
+          '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
+            fontSize: '0.8125rem',
+            color: '#475569',
+          },
+        }}
+      />
+    </TableContainer>
+  );
+});
+
+DeliveriesTable.displayName = 'DeliveriesTable';
+
+export default DeliveriesTable;

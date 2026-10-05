@@ -554,18 +554,11 @@ export const OrderDetailPage: React.FC = () => {
                         {order.statusEntrega && (
                           <Box>
                             <GlobalTypography variant="caption" sx={{ color: '#64748B', display: 'block' }}>
-                              Estatus de Entrega
+                              Estatus del Lugar de Entrega
                             </GlobalTypography>
-                            <Chip
-                              label={order.statusEntrega}
-                              size="small"
-                              sx={{
-                                mt: 0.5,
-                                backgroundColor: '#EFF6FF',
-                                color: '#1D4ED8',
-                                fontWeight: 600,
-                              }}
-                            />
+                            <Box sx={{ mt: 0.5 }}>
+                              <StatusChip status={order.statusEntrega} size="small" />
+                            </Box>
                           </Box>
                         )}
                       </Box>

@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -53,6 +54,7 @@ export const UserMenu: React.FC = memo(() => {
   if (!user) return null;
 
   const isUsers = location.pathname.startsWith('/usuarios');
+  const isDeliveries = location.pathname.startsWith('/entregas');
 
   return (
     <Box>
@@ -185,6 +187,32 @@ export const UserMenu: React.FC = memo(() => {
           </MenuItem>
           <Divider sx={{ my: 0.5 }} />
         </AclGuard>
+
+        <MenuItem
+          selected={isDeliveries}
+          onClick={() => handleNavigate('/entregas')}
+          sx={{
+            py: 1.2,
+            px: 2,
+            gap: 1.5,
+            fontSize: '0.875rem',
+            fontWeight: isDeliveries ? 700 : 500,
+            color: isDeliveries ? '#E10098' : '#1E293B',
+            '&.Mui-selected': {
+              backgroundColor: '#FDF2F8',
+              '&:hover': {
+                backgroundColor: '#FCE7F3',
+              },
+            },
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 28, color: isDeliveries ? '#E10098' : '#64748B' }}>
+            <LocalShippingOutlinedIcon sx={{ fontSize: 20 }} />
+          </ListItemIcon>
+          <ListItemText primary="Lugares de Entrega" />
+        </MenuItem>
+
+        <Divider sx={{ my: 0.5 }} />
 
         <MenuItem
           onClick={handleLogout}

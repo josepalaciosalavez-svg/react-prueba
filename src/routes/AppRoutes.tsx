@@ -16,6 +16,9 @@ const OrderDetailPage = lazy(() =>
 const UsersListPage = lazy(() =>
   import('@/pages/UsersListPage').then((m) => ({ default: m.UsersListPage }))
 );
+const DeliveriesListPage = lazy(() =>
+  import('@/pages/DeliveriesListPage').then((m) => ({ default: m.DeliveriesListPage }))
+);
 const NotFoundPage = lazy(() =>
   import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage }))
 );
@@ -45,6 +48,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="/pedidos" element={<OrdersListPage />} />
           <Route path="/pedidos/:id" element={<OrderDetailPage />} />
           <Route path="/usuarios" element={<UsersListPage />} />
+          <Route path="/entregas" element={<DeliveriesListPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />
